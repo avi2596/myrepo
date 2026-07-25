@@ -1,3 +1,4 @@
+
 """
 Monthly seasonality heatmap for any Yahoo Finance symbol — S&P 500 by default.
 
@@ -92,9 +93,19 @@ def fetch_monthly_returns(ticker: str, first_year: int) -> tuple[pd.Series, pd.T
 
     # The monthly bar is stamped with the 1st, which would misreport how current
     # the partial month is — ask for recent daily bars to get the real last close.
-    daily = yf.download(ticker, start=(today - pd.Timedelta(days=10)).strftime("%Y-%m-%d"),
+    # Yahoo pads the range with empty rows for sessions it has no print for yet,
+    # so drop those before taking the last one, or the page claims to be a day
+    # more current than the data actually is.
+    daily = yf.download(ticker, start=(today - pd.Timedelta(days=14)).strftime("%Y-%m-%d"),
                         interval="1d", auto_adjust=True, progress=False)
-    asof = daily.index[-1] if not daily.empty else returns.index[-1]
+    if not daily.empty:
+        closes = daily["Close"]
+        if isinstance(closes, pd.DataFrame):
+            closes = closes.iloc[:, 0]
+        closes = closes.dropna()
+    else:
+        closes = pd.Series(dtype=float)
+    asof = closes.index[-1] if not closes.empty else returns.index[-1]
     return returns, pd.Timestamp(asof)
 
 
