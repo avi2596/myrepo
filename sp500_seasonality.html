@@ -1,0 +1,583 @@
+<title>S&P 500 Monthly Seasonality</title>
+
+<style>
+  :root {
+    color-scheme: light;
+    --page:      #edefea;
+    --surface:   #fafbf7;
+    --ink:       #14181a;
+    --ink-2:     #565f5c;
+    --ink-3:     #8a918d;
+    --rule:      #d3d7cf;
+    --rule-soft: #e3e6df;
+    --focus:     #2d3a44;
+    --cell-ink:  #14181a;
+    --cell-pale: #fafbf7;
+    --tip-bg:    #14181a;
+    --tip-ink:   #fafbf7;
+    --shadow:    0 1px 2px rgba(20,24,26,.06), 0 8px 24px rgba(20,24,26,.08);
+
+    /* Diverging ramp — red (loss) to green (gain), pale midpoint at zero.
+       Nine hand-picked steps per theme, not an algorithmic inversion. */
+    --r0:#8c1c26; --r1:#b8342c; --r2:#d95f38; --r3:#eda061; --r4:#f6ecc4;
+    --r5:#c2dc93; --r6:#83bd63; --r7:#43913f; --r8:#1c6435;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:      #0b0e0f;
+      --surface:   #14181a;
+      --ink:       #eef1ec;
+      --ink-2:     #a5ada9;
+      --ink-3:     #7b837f;
+      --rule:      #2a3033;
+      --rule-soft: #1e2426;
+      --focus:     #9fb3bf;
+      --cell-ink:  #0b0e0f;
+      --cell-pale: #eef1ec;
+      --tip-bg:    #eef1ec;
+      --tip-ink:   #14181a;
+      --shadow:    0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.45);
+      --r0:#7d1f27; --r1:#a63a2e; --r2:#c4643a; --r3:#c9955c; --r4:#3f4437;
+      --r5:#6f9457; --r6:#4f8d4a; --r7:#33763c; --r8:#1e5730;
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:      #0b0e0f;
+    --surface:   #14181a;
+    --ink:       #eef1ec;
+    --ink-2:     #a5ada9;
+    --ink-3:     #7b837f;
+    --rule:      #2a3033;
+    --rule-soft: #1e2426;
+    --focus:     #9fb3bf;
+    --cell-ink:  #0b0e0f;
+    --cell-pale: #eef1ec;
+    --tip-bg:    #eef1ec;
+    --tip-ink:   #14181a;
+    --shadow:    0 1px 2px rgba(0,0,0,.5), 0 8px 24px rgba(0,0,0,.45);
+    --r0:#7d1f27; --r1:#a63a2e; --r2:#c4643a; --r3:#c9955c; --r4:#3f4437;
+    --r5:#6f9457; --r6:#4f8d4a; --r7:#33763c; --r8:#1e5730;
+  }
+
+  /* Colour-blind-safe alternative: red to blue across a neutral grey midpoint. */
+  :root[data-ramp="cvd"] {
+    --r0:#7b1a2b; --r1:#a83a41; --r2:#cd7d78; --r3:#e6b7ac; --r4:#eeeee9;
+    --r5:#a9c4dd; --r6:#6f9ec9; --r7:#3c74ad; --r8:#1c4a80;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root[data-ramp="cvd"]:where(:not([data-theme="light"])) {
+      --r0:#7d2230; --r1:#9c3f45; --r2:#b06a66; --r3:#a58079; --r4:#383c3d;
+      --r5:#5a7fa4; --r6:#4470a3; --r7:#2f5c8e; --r8:#22456c;
+    }
+  }
+  :root[data-theme="dark"][data-ramp="cvd"] {
+    --r0:#7d2230; --r1:#9c3f45; --r2:#b06a66; --r3:#a58079; --r4:#383c3d;
+    --r5:#5a7fa4; --r6:#4470a3; --r7:#2f5c8e; --r8:#22456c;
+  }
+
+  body {
+    margin: 0;
+    background: var(--page);
+    color: var(--ink);
+    font: 400 16px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: clamp(28px, 5vw, 64px) clamp(16px, 4vw, 40px) 80px; }
+
+  /* ---- masthead ---- */
+  .eyebrow {
+    font: 600 11.5px/1 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--ink-3);
+    display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  }
+  .eyebrow span::after { content: "·"; margin-left: 10px; color: var(--rule); }
+  .eyebrow span:last-child::after { content: ""; }
+  h1 {
+    font: 400 clamp(34px, 6vw, 58px)/1.04 Georgia, "Iowan Old Style", Charter, "Times New Roman", serif;
+    letter-spacing: -.015em; text-wrap: balance; margin: 18px 0 0; max-width: 20ch;
+  }
+  h1 em { font-style: italic; color: var(--ink-2); }
+  .deck { margin: 14px 0 0; max-width: 62ch; color: var(--ink-2); font-size: 16.5px; }
+  .masthead-rule { height: 1px; background: var(--ink); opacity: .85; margin: 28px 0 0; }
+
+  /* ---- controls ---- */
+  .controls { display: flex; flex-wrap: wrap; gap: 10px 26px; align-items: center; padding: 14px 0 0; }
+  .ctl-label {
+    font: 600 10.5px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); margin-right: -14px;
+  }
+  .seg { display: inline-flex; border: 1px solid var(--rule); border-radius: 2px; overflow: hidden; }
+  .seg button {
+    appearance: none; border: 0; background: transparent; color: var(--ink-2);
+    font: 500 12.5px/1 inherit; padding: 7px 13px; cursor: pointer;
+    border-right: 1px solid var(--rule);
+  }
+  .seg button:last-child { border-right: 0; }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--surface); }
+  .seg button:focus-visible, .mo-head:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+
+  /* ---- section headings ---- */
+  section { margin-top: clamp(38px, 5vw, 58px); }
+  .sec-head { display: flex; align-items: baseline; gap: 14px; border-bottom: 1px solid var(--rule); padding-bottom: 8px; }
+  h2 {
+    font: 600 11.5px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    letter-spacing: .16em; text-transform: uppercase; margin: 0; color: var(--ink);
+  }
+  .sec-note { font-size: 13px; color: var(--ink-3); margin-left: auto; text-align: right; }
+
+  /* ---- verdict tiles ---- */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--rule); border: 1px solid var(--rule); margin-top: 20px; }
+  .tile { background: var(--surface); padding: 20px 22px 22px; }
+  .tile-k { font: 600 10.5px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-3); }
+  .tile-v {
+    font: 400 clamp(30px, 4.4vw, 42px)/1 Georgia, "Iowan Old Style", Charter, serif;
+    margin: 12px 0 0; letter-spacing: -.02em; font-variant-numeric: tabular-nums;
+    display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;
+  }
+  .tile-v .unit { font: 400 17px/1 Georgia, serif; color: var(--ink-2); }
+  .tile-sub { margin: 10px 0 0; font-size: 13.5px; color: var(--ink-2); line-height: 1.5; }
+  .swatch { width: 10px; height: 10px; border-radius: 50%; display: inline-block; vertical-align: baseline; }
+
+  /* ---- grids ---- */
+  .scroll { overflow-x: auto; margin-top: 20px; padding-bottom: 4px; }
+  table { border-collapse: separate; border-spacing: 2px; font-variant-numeric: tabular-nums; }
+  caption { caption-side: top; text-align: left; font-size: 13px; color: var(--ink-3); padding-bottom: 10px; }
+  th { font-weight: 500; }
+  .mo-head {
+    font: 600 11px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-2); padding: 0 0 8px; min-width: 58px;
+    background: transparent; border: 0; cursor: pointer; width: 100%;
+  }
+  .mo-head[data-locked="true"] { color: var(--ink); text-decoration: underline; text-underline-offset: 4px; }
+  .yr {
+    font: 500 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace; color: var(--ink-3);
+    text-align: right; padding-right: 12px; white-space: nowrap;
+  }
+  td.cell {
+    font: 500 12px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+    text-align: center; padding: 7px 4px; min-width: 58px; border-radius: 2px;
+    position: relative; cursor: default;
+  }
+  td.empty { background: transparent; }
+  .dim { opacity: .26; }
+  .lit { outline: 1.5px solid var(--ink); outline-offset: -1.5px; }
+
+  /* summary strip */
+  .strip { margin-top: 20px; }
+  .strip table { border-spacing: 2px; width: 100%; }
+  .strip td.cell { padding: 13px 4px; font-size: 13.5px; font-weight: 600; }
+  .strip .rowlab {
+    font: 600 10.5px/1 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .1em;
+    text-transform: uppercase; color: var(--ink-2); text-align: right; padding-right: 12px; white-space: nowrap;
+  }
+  .winbar { height: 6px; background: var(--rule-soft); border-radius: 1px; position: relative; }
+  .winbar i { position: absolute; inset: 0 auto 0 0; background: var(--ink-2); border-radius: 1px; display: block; }
+  .wintxt { font: 500 11px/1 ui-monospace, Menlo, monospace; color: var(--ink-2); padding-top: 5px; display: block; text-align: center; }
+  .nrow { color: var(--ink-3); padding-top: 2px; }
+
+  /* legend */
+  .legend { display: flex; flex-wrap: wrap; gap: 22px 34px; align-items: flex-start; margin-top: 22px; }
+  .lg { min-width: 210px; }
+  .lg-k { font: 600 10px/1 ui-monospace, Menlo, monospace; letter-spacing: .13em; text-transform: uppercase; color: var(--ink-3); }
+  .lg-bar { display: flex; height: 10px; margin: 8px 0 5px; }
+  .lg-bar i { flex: 1; }
+  .lg-ends { display: flex; justify-content: space-between; font: 500 11px/1 ui-monospace, Menlo, monospace; color: var(--ink-3); }
+
+  /* tooltip */
+  #tip {
+    position: fixed; z-index: 50; pointer-events: none; opacity: 0;
+    transition: opacity .09s ease; background: var(--tip-bg); color: var(--tip-ink);
+    padding: 11px 14px; border-radius: 3px; box-shadow: var(--shadow); max-width: 260px;
+  }
+  #tip[data-on="1"] { opacity: 1; }
+  #tip .t-h { font: 600 10.5px/1 ui-monospace, Menlo, monospace; letter-spacing: .12em; text-transform: uppercase; opacity: .65; }
+  #tip .t-v { font: 400 26px/1.1 Georgia, serif; margin: 7px 0 0; font-variant-numeric: tabular-nums; }
+  #tip dl { display: grid; grid-template-columns: auto auto; gap: 3px 16px; margin: 10px 0 0; font: 400 12px/1.35 ui-monospace, Menlo, monospace; }
+  #tip dt { opacity: .65; }
+  #tip dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+
+  /* findings */
+  .findings { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 26px 40px; margin-top: 24px; }
+  .find h3 { font: 500 19px/1.25 Georgia, "Iowan Old Style", Charter, serif; margin: 0 0 7px; }
+  .find p { margin: 0; color: var(--ink-2); font-size: 14.5px; line-height: 1.62; }
+  .find p b { color: var(--ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+  .method { margin-top: 44px; padding-top: 18px; border-top: 1px solid var(--rule); color: var(--ink-3); font-size: 13px; line-height: 1.65; max-width: 78ch; }
+  .method b { color: var(--ink-2); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow" id="eyebrow"></p>
+    <h1>Every month is not <em>created equal</em></h1>
+    <p class="deck">
+      Twenty-five years of S&amp;P 500 monthly returns plus the year to date, laid out year by year.
+      Average a month across a quarter century and a seasonal shape appears that no single year
+      shows on its own. Every month here counts toward that average — including the one still
+      running, carried at its month-to-date return.
+    </p>
+    <div class="masthead-rule"></div>
+    <div class="controls">
+      <span class="ctl-label">Palette</span>
+      <div class="seg" role="group" aria-label="Colour palette">
+        <button type="button" data-ramp-set="rdylgn" aria-pressed="true">Red / green</button>
+        <button type="button" data-ramp-set="cvd" aria-pressed="false">Colour-blind safe</button>
+      </div>
+      <span class="ctl-label">Grid shows</span>
+      <div class="seg" role="group" aria-label="Grid values">
+        <button type="button" data-metric="value" aria-pressed="true">Values</button>
+        <button type="button" data-metric="colour" aria-pressed="false">Colour only</button>
+      </div>
+    </div>
+  </header>
+
+  <section id="verdict">
+    <div class="sec-head">
+      <h2>The seasonal verdict</h2>
+      <p class="sec-note" id="verdict-note"></p>
+    </div>
+    <div class="tiles" id="tiles"></div>
+  </section>
+
+  <section id="summary">
+    <div class="sec-head">
+      <h2>Average by calendar month</h2>
+      <p class="sec-note">Own colour scale — see the legend below</p>
+    </div>
+    <div class="strip scroll" id="strip"></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <section id="matrix">
+    <div class="sec-head">
+      <h2>Year by month</h2>
+      <p class="sec-note">Hover a cell for detail · click a month name to hold its column</p>
+    </div>
+    <div class="scroll" id="grid"></div>
+  </section>
+
+  <section id="notes">
+    <div class="sec-head"><h2>What the grid says</h2></div>
+    <div class="findings">
+      <div class="find">
+        <h3>November is the standout</h3>
+        <p>Best month on every measure: <b>+2.53%</b> average, <b>+2.80%</b> median, and up in
+          <b>77%</b> of its 25 observations — the highest hit rate on the board. Strip out its best
+          year (2020, <b>+10.75%</b>) and it still averages <b>+2.18%</b>, so this is not one
+          outlier carrying a month.</p>
+      </div>
+      <div class="find">
+        <h3>September is the weakest, but not the way it looks</h3>
+        <p>At <b>−1.15%</b> it has the lowest average of the twelve, down in <b>12</b> of 25 years.
+          Its median, though, is <b>+0.43%</b>: the typical September is mildly positive and the
+          average is dragged under by a handful of routs — 2002 <b>−11.0%</b>, 2022 <b>−9.3%</b>,
+          2008 <b>−9.1%</b>.</p>
+      </div>
+      <div class="find">
+        <h3>February is the genuinely negative one</h3>
+        <p>Four months carry a negative average — February, June, August, September — but February
+          alone is also negative at the <b>median</b> (<b>−0.18%</b>), and it wins least often of
+          any month (<b>50%</b>). Where September's weakness is a few disasters, February's is the
+          ordinary case.</p>
+      </div>
+      <div class="find">
+        <h3>Mean and median disagree, and that is the finding</h3>
+        <p>January averages a flat <b>+0.17%</b> but has a <b>+1.39%</b> median — 2009
+          (<b>−8.6%</b>) and 2008 (<b>−6.1%</b>) do the damage. October is the mirror image:
+          a <b>+2.04%</b> median against a <b>+1.42%</b> average, because of a single
+          <b>−16.9%</b> in 2008, the worst cell in the grid. Read both rows.</p>
+      </div>
+      <div class="find">
+        <h3>One new observation moves a month</h3>
+        <p>April 2026 came in at <b>+10.42%</b>, the second-best April in the sample. That one
+          month lifted April's average from <b>+1.74%</b> to <b>+2.08%</b> and made it the
+          second-best month of the year — an observation landing 8.7 points above the old mean
+          moves it by 8.7/26, a third of a point. At this sample size every new month has real
+          leverage, which is the cost of keeping the averages current.</p>
+      </div>
+      <div class="find">
+        <h3>The winter half really does out-earn the summer half</h3>
+        <p>November through April averages <b>+5.41%</b> in total; May through October
+          averages <b>+2.51%</b>. The old "sell in May" split is visible in this sample —
+          but note the summer half is still <b>positive</b>, so the seasonal edge is in the
+          rate of gain, not in a loss to avoid.</p>
+      </div>
+      <div class="find">
+        <h3>Volatility is seasonal too</h3>
+        <p>September and October carry the widest spreads (standard deviation <b>4.98</b> and
+          <b>5.72</b> against a low of <b>3.45</b> in August). Autumn is not merely weaker on
+          average, it is the least predictable stretch of the year.</p>
+      </div>
+      <div class="find">
+        <h3>Any single year ignores all of this</h3>
+        <p>Scan any row across and the seasonal pattern is invisible; 2022 posted its best month
+          in July and its worst in April. The pattern only exists in aggregate, across a sample
+          small enough that a couple of crises can move a month's average by a full
+          percentage point.</p>
+      </div>
+    </div>
+    <p class="method" id="method"></p>
+  </section>
+</div>
+
+<div id="tip" role="tooltip" aria-hidden="true"></div>
+
+<script type="application/json" id="data">
+{"ticker":"^GSPC","asof":"2026-07-24","partial":{"year":2026,"month":"Jul"},"months":["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"],"years":{"2001":[3.46,-9.23,-6.42,7.68,0.51,-2.5,-1.07,-6.41,-8.17,1.81,7.52,0.76],"2002":[-1.56,-2.08,3.67,-6.14,-0.91,-7.25,-7.9,0.49,-11.0,8.64,5.71,-6.03],"2003":[-2.74,-1.7,0.84,8.1,5.09,1.13,1.62,1.79,-1.19,5.5,0.71,5.08],"2004":[1.73,1.22,-1.64,-1.68,1.21,1.8,-3.43,0.23,0.94,1.4,3.86,3.25],"2005":[-2.53,1.89,-1.91,-2.01,3.0,-0.01,3.6,-1.12,0.69,-1.77,3.52,-0.1],"2006":[2.55,0.05,1.11,1.22,-3.09,0.01,0.51,2.13,2.46,3.15,1.65,1.26],"2007":[1.41,-2.18,1.0,4.33,3.25,-1.78,-3.2,1.29,3.58,1.48,-4.4,-0.86],"2008":[-6.12,-3.48,-0.6,4.75,1.07,-8.6,-0.99,1.22,-9.08,-16.94,-7.48,0.78],"2009":[-8.57,-10.99,8.54,9.39,5.31,0.02,7.41,3.36,3.57,-1.98,5.74,1.78],"2010":[-3.7,2.85,5.88,1.48,-8.2,-5.39,6.88,-4.74,8.76,3.69,-0.23,6.53],"2011":[2.26,3.2,-0.1,2.85,-1.35,-1.83,-2.15,-5.68,-7.18,10.77,-0.51,0.85],"2012":[4.36,4.06,3.13,-0.75,-6.27,3.96,1.26,1.98,2.42,-1.98,0.28,0.71],"2013":[5.04,1.11,3.6,1.81,2.08,-1.5,4.95,-3.13,2.97,4.46,2.8,2.36],"2014":[-3.56,4.31,0.69,0.62,2.1,1.91,-1.51,3.77,-1.55,2.32,2.45,-0.42],"2015":[-3.1,5.49,-1.74,0.85,1.05,-2.1,1.97,-6.26,-2.64,8.3,0.05,-1.75],"2016":[-5.07,-0.41,6.6,0.27,1.53,0.09,3.56,-0.12,-0.12,-1.94,3.42,1.82],"2017":[1.79,3.72,-0.04,0.91,1.16,0.48,1.93,0.05,1.93,2.22,2.81,0.98],"2018":[5.62,-3.89,-2.69,0.27,2.16,0.48,3.6,3.03,0.43,-6.94,1.79,-9.18],"2019":[7.87,2.97,1.79,3.93,-6.58,6.89,1.31,-1.81,1.72,2.04,3.4,2.86],"2020":[-0.16,-8.41,-12.51,12.68,4.53,1.84,5.51,7.01,-3.92,-2.77,10.75,3.71],"2021":[-1.11,2.61,4.24,5.24,0.55,2.22,2.27,2.9,-4.76,6.91,-0.83,4.36],"2022":[-5.26,-3.14,3.58,-8.8,0.01,-8.39,9.11,-4.24,-9.34,7.99,5.38,-5.9],"2023":[6.18,-2.61,3.51,1.46,0.25,6.47,3.11,-1.77,-4.87,-2.2,8.92,4.42],"2024":[1.59,5.17,3.1,-4.16,4.8,3.47,1.13,2.28,2.02,-0.99,5.73,-2.5],"2025":[2.7,-1.42,-5.75,-0.76,6.15,4.96,2.17,1.91,3.53,2.27,0.13,-0.05],"2026":[1.37,-0.87,-5.09,10.42,5.15,-1.06,-1.17,null,null,null,null,null]},"avg":[0.17,-0.45,0.49,2.08,0.94,-0.18,1.56,-0.08,-1.15,1.42,2.53,0.59],"median":[1.39,-0.18,0.92,1.34,1.18,0.06,1.78,0.49,0.43,2.04,2.8,0.85],"win":[53.8,50.0,57.7,73.1,76.9,57.7,69.2,57.7,50.0,61.5,76.9,61.5],"n":[26,26,26,26,26,26,26,25,25,25,25,25],"std":[4.18,4.37,4.53,4.96,3.7,4.02,3.72,3.45,4.98,5.72,3.95,3.61],"best":[7.87,5.49,8.54,12.68,6.15,6.89,9.11,7.01,8.76,10.77,10.75,6.53],"worst":[-8.57,-10.99,-12.51,-8.8,-8.2,-8.6,-7.9,-6.41,-11.0,-16.94,-7.48,-9.18],"best_year":[2019,2015,2009,2020,2025,2019,2022,2020,2010,2011,2020,2010],"worst_year":[2009,2009,2020,2022,2010,2008,2002,2001,2002,2008,2008,2018]}
+</script>
+
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById("data").textContent);
+  const M = D.months;
+  // Every year in the payload counts toward the averages, the year in progress
+  // included — so there is one list of years, not a "counted" and an "excluded" set.
+  const YEARS = Object.keys(D.years).map(Number).sort();
+  const LAST = YEARS[YEARS.length - 1];
+  const PART_M = M.indexOf(D.partial.month);   // the month-to-date cell
+  const PART_Y = D.partial.year;
+  const isPartial = (y, i) => +y === PART_Y && i === PART_M;
+  const asof = new Date(D.asof + "T00:00:00").toLocaleDateString(undefined,
+    { day: "numeric", month: "short", year: "numeric" });
+
+  const GRID_LIMIT = 17;   // true range of the year grid
+  const STRIP_LIMIT = 3;   // averages compress; the strip gets its own domain
+  // The grid's values cluster near zero against a wide range, so it gets a mild
+  // power compression to keep small months distinguishable. The strip's domain
+  // already matches its data, so it stays linear — no need to stretch it.
+  const GRID_GAMMA = 0.75, STRIP_GAMMA = 1;
+  const fmt = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(1);
+  const fmt2 = v => (v > 0 ? "+" : v < 0 ? "−" : "") + Math.abs(v).toFixed(2);
+
+  /* --- ramp: read the nine theme steps live so a theme or palette switch
+         repaints from CSS rather than from a hard-coded table --- */
+  const readRamp = () => {
+    const cs = getComputedStyle(document.documentElement);
+    return Array.from({length: 9}, (_, i) => parse(cs.getPropertyValue("--r" + i).trim()));
+  };
+  const parse = hex => {
+    const h = hex.replace("#", "");
+    return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16));
+  };
+  let RAMP = readRamp();
+
+  const colourFor = (v, limit, gamma = GRID_GAMMA) => {
+    const t = Math.sign(v) * Math.pow(Math.min(Math.abs(v) / limit, 1), gamma); // -1..1
+    const p = (t + 1) / 2 * 8;                                                  // 0..8
+    const i = Math.max(0, Math.min(7, Math.floor(p))), f = p - i;
+    const a = RAMP[i], b = RAMP[i + 1];
+    return a.map((c, k) => Math.round(c + (b[k] - c) * f));
+  };
+  const css = c => `rgb(${c[0]},${c[1]},${c[2]})`;
+  // WCAG relative luminance, so cell text flips to the legible ink for its own fill.
+  const lum = c => {
+    const s = c.map(x => { x /= 255; return x <= .04045 ? x / 12.92 : Math.pow((x + .055) / 1.055, 2.4); });
+    return .2126 * s[0] + .7152 * s[1] + .0722 * s[2];
+  };
+  const inkOn = c => lum(c) > .42 ? "var(--cell-ink)" : "var(--cell-pale)";
+
+  /* ---------------- tooltip ---------------- */
+  const tip = document.getElementById("tip");
+  const showTip = (el, html) => {
+    tip.innerHTML = html;
+    tip.dataset.on = "1";
+    tip.setAttribute("aria-hidden", "false");
+    const r = el.getBoundingClientRect(), t = tip.getBoundingClientRect();
+    let x = r.left + r.width / 2 - t.width / 2;
+    x = Math.max(10, Math.min(x, innerWidth - t.width - 10));
+    let y = r.top - t.height - 10;
+    if (y < 10) y = r.bottom + 10;
+    tip.style.left = x + "px";
+    tip.style.top = y + "px";
+  };
+  const hideTip = () => { tip.dataset.on = "0"; tip.setAttribute("aria-hidden", "true"); };
+  addEventListener("scroll", hideTip, true);
+
+  /* ---------------- verdict tiles ---------------- */
+  const iBest = D.avg.indexOf(Math.max(...D.avg));
+  const iWorst = D.avg.indexOf(Math.min(...D.avg));
+  const dot = v => `<span class="swatch" style="background:${css(colourFor(v, STRIP_LIMIT, STRIP_GAMMA))}"></span>`;
+
+  // Header facts are derived, never typed — a re-run with fresh data restates them.
+  const total = D.n.reduce((a, b) => a + b, 0);
+  document.getElementById("eyebrow").innerHTML =
+    [`S&amp;P 500`, `${D.ticker}`, `${YEARS[0]}–${LAST} YTD`, `${total} months`, `through ${asof}`]
+      .map(s => `<span>${s}</span>`).join("");
+  document.getElementById("verdict-note").textContent =
+    `All ${total} months, ${YEARS[0]} through ${asof}`;
+
+  document.getElementById("method").innerHTML = `
+    <b>Method.</b> Monthly bars for <b>${D.ticker}</b> from Yahoo Finance via <b>yfinance</b>
+    (<code>auto_adjust=True</code>, so closes are adjusted), percentage change month over month.
+    The sample is every month from <b>January ${YEARS[0]}</b> through <b>${asof}</b> — ${total} of them —
+    and <b>all of it counts toward the averages</b>, the year to date included. ${M[PART_M]} ${PART_Y}
+    is carried at its month-to-date return (marked *) and will settle to a final figure when the month
+    closes. Because the year to date is in, months already past this year hold
+    <b>${Math.max(...D.n)}</b> observations against <b>${Math.min(...D.n)}</b> for those still ahead
+    of it; the <b>Months</b> row states which is which. Price return only — the S&amp;P 500 index
+    excludes dividends, so these are not total returns.
+    <b>Two colour scales are in play:</b> the year grid spans ±17% (its true range), the average
+    strip ±3%. Averaging compresses the spread, so sharing one scale would flatten the whole
+    summary to a single pale tone. Cell values are always printed, so no reading depends on colour
+    alone. <b>Past seasonality is not a forecast.</b>`;
+
+  // Year to date, compounded across the months of the current year that have data.
+  const ytdMonths = D.years[LAST].filter(v => v !== null);
+  const ytd = (ytdMonths.reduce((p, v) => p * (1 + v / 100), 1) - 1) * 100;
+
+  document.getElementById("tiles").innerHTML = [
+    { k: "Best month", v: M[iBest], u: fmt2(D.avg[iBest]) + "%", c: D.avg[iBest],
+      s: `Highest average <em>and</em> highest hit rate — up in ${Math.round(D.win[iBest])}% of the ${D.n[iBest]} ${M[iBest]}s on record.` },
+    { k: "Worst month", v: M[iWorst], u: fmt2(D.avg[iWorst]) + "%", c: D.avg[iWorst],
+      s: `Lowest average of the twelve. Its median is still ${fmt2(D.median[iWorst])}% — a few routs do the damage.` },
+    { k: `${LAST} year to date`, v: fmt2(ytd) + "%", u: `${ytdMonths.length} months, through ${asof}`, c: ytd > 0 ? 2.5 : -2.5,
+      s: `Compounded. Every one of these months is folded into the averages, ${M[PART_M]} included while it is still running.` }
+  ].map(t => `<div class="tile">
+      <p class="tile-k">${t.k}</p>
+      <p class="tile-v">${dot(t.c)}${t.v}<span class="unit">${t.u}</span></p>
+      <p class="tile-sub">${t.s}</p>
+    </div>`).join("");
+
+  /* ---------------- summary strip ---------------- */
+  const stripRow = (label, vals, key) => `<tr>
+      <th scope="row" class="rowlab">${label}</th>
+      ${vals.map((v, i) => `<td class="cell" data-kind="strip" data-m="${i}" data-key="${key}">${fmt2(v)}%</td>`).join("")}
+    </tr>`;
+
+  document.getElementById("strip").innerHTML = `<table>
+    <caption>Average and median return for each calendar month across the whole sample, with the share of
+      months that finished positive and how many observations each one has.</caption>
+    <thead><tr><td></td>${M.map((m, i) =>
+      `<th scope="col"><button type="button" class="mo-head" data-lock="${i}">${m}</button></th>`).join("")}</tr></thead>
+    <tbody>
+      ${stripRow("Average", D.avg, "avg")}
+      ${stripRow("Median", D.median, "median")}
+      <tr><th scope="row" class="rowlab">Win rate</th>
+        ${D.win.map(w => `<td><div class="winbar"><i style="width:${w}%"></i></div><span class="wintxt">${Math.round(w)}%</span></td>`).join("")}
+      </tr>
+      <tr><th scope="row" class="rowlab">Months</th>
+        ${D.n.map((n, i) => `<td><span class="wintxt nrow">${n}${i === PART_M ? "*" : ""}</span></td>`).join("")}
+      </tr>
+    </tbody></table>`;
+
+  /* ---------------- year grid ---------------- */
+  const gridRows = years => years.map(y => `<tr>
+      <th scope="row" class="yr">${y}</th>
+      ${D.years[y].map((v, i) => v === null
+        ? `<td class="cell empty" data-m="${i}"></td>`
+        : `<td class="cell" data-kind="grid" data-m="${i}" data-y="${y}">${fmt(v)}${isPartial(y, i) ? "*" : ""}</td>`).join("")}
+    </tr>`).join("");
+
+  document.getElementById("grid").innerHTML = `<table>
+    <caption>Monthly percentage change in the adjusted close, ${YEARS[0]}–${LAST}. Values in per cent.
+      * = ${M[PART_M]} ${PART_Y} month to date, through ${asof}.</caption>
+    <thead><tr><td></td>${M.map((m, i) =>
+      `<th scope="col"><button type="button" class="mo-head" data-lock="${i}">${m}</button></th>`).join("")}</tr></thead>
+    <tbody>${gridRows(YEARS)}</tbody>
+  </table>`;
+
+  /* ---------------- legend ---------------- */
+  const legendBar = (limit, gamma) => Array.from({length: 28}, (_, i) => {
+    const v = -limit + (2 * limit) * (i / 27);
+    return `<i style="background:${css(colourFor(v, limit, gamma))}"></i>`;
+  }).join("");
+  const drawLegend = () => {
+    document.getElementById("legend").innerHTML = `
+      <div class="lg"><p class="lg-k">Year grid</p><div class="lg-bar">${legendBar(GRID_LIMIT, GRID_GAMMA)}</div>
+        <div class="lg-ends"><span>−17%</span><span>0</span><span>+17%</span></div></div>
+      <div class="lg"><p class="lg-k">Average strip</p><div class="lg-bar">${legendBar(STRIP_LIMIT, STRIP_GAMMA)}</div>
+        <div class="lg-ends"><span>−3%</span><span>0</span><span>+3%</span></div></div>`;
+  };
+
+  /* ---------------- painting ---------------- */
+  let hideValues = false;   // "colour only" must survive a theme or palette repaint
+  const paint = () => {
+    RAMP = readRamp();
+    document.querySelectorAll("td.cell[data-kind]").forEach(td => {
+      const i = +td.dataset.m, strip = td.dataset.kind === "strip";
+      const v = strip ? D[td.dataset.key][i] : D.years[td.dataset.y][i];
+      const c = strip ? colourFor(v, STRIP_LIMIT, STRIP_GAMMA) : colourFor(v, GRID_LIMIT, GRID_GAMMA);
+      td.style.background = css(c);
+      td.style.color = (hideValues && !strip) ? "transparent" : inkOn(c);
+    });
+    drawLegend();
+  };
+  paint();
+  // Repaint when the OS theme flips — the two themes have different ramp steps.
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", paint);
+  // The artifact host stamps data-theme on <html> when the viewer toggles theme.
+  new MutationObserver(paint).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+
+  /* ---------------- column highlight ---------------- */
+  let locked = null;
+  const applyCol = i => {
+    document.querySelectorAll("td.cell, .mo-head").forEach(el => {
+      const m = el.dataset.m ?? el.dataset.lock;
+      el.classList.toggle("dim", i !== null && +m !== i);
+    });
+    document.querySelectorAll(".mo-head").forEach(b =>
+      b.dataset.locked = String(locked !== null && +b.dataset.lock === locked));
+  };
+
+  document.addEventListener("click", e => {
+    const b = e.target.closest(".mo-head");
+    if (!b) return;
+    locked = locked === +b.dataset.lock ? null : +b.dataset.lock;
+    applyCol(locked);
+  });
+
+  /* ---------------- hover detail ---------------- */
+  document.addEventListener("mouseover", e => {
+    const td = e.target.closest("td.cell[data-kind]");
+    if (!td) return;
+    const i = +td.dataset.m;
+    if (locked === null) applyCol(i);
+    td.classList.add("lit");
+
+    if (td.dataset.kind === "grid") {
+      const y = td.dataset.y, v = D.years[y][i], part = isPartial(y, i);
+      const rank = YEARS.filter(yy => D.years[yy][i] !== null && D.years[yy][i] > v).length + 1;
+      showTip(td, `<p class="t-h">${M[i]} ${y}${part ? " · month to date" : ""}</p>
+        <p class="t-v">${fmt2(v)}%</p>
+        <dl><dt>avg for ${M[i]}</dt><dd>${fmt2(D.avg[i])}%</dd>
+        <dt>vs that average</dt><dd>${fmt2(v - D.avg[i])} pts</dd>
+        <dt>rank among ${M[i]}s</dt><dd>${rank} of ${D.n[i]}</dd>
+        ${part ? `<dt>through</dt><dd>${asof}</dd>` : ""}</dl>`);
+    } else {
+      showTip(td, `<p class="t-h">${M[i]} · ${D.n[i]}-month record</p><p class="t-v">${fmt2(D.avg[i])}%</p>
+        <dl><dt>median</dt><dd>${fmt2(D.median[i])}%</dd>
+        <dt>positive</dt><dd>${Math.round(D.win[i])}%</dd>
+        <dt>std dev</dt><dd>${D.std[i].toFixed(2)}</dd>
+        <dt>best</dt><dd>${fmt2(D.best[i])}% (${D.best_year[i]})</dd>
+        <dt>worst</dt><dd>${fmt2(D.worst[i])}% (${D.worst_year[i]})</dd>
+        ${i === PART_M ? `<dt>includes</dt><dd>${M[i]} ${PART_Y} MTD</dd>` : ""}</dl>`);
+    }
+  });
+  document.addEventListener("mouseout", e => {
+    const td = e.target.closest("td.cell[data-kind]");
+    if (!td) return;
+    td.classList.remove("lit");
+    hideTip();
+    applyCol(locked);
+  });
+
+  /* ---------------- controls ---------------- */
+  document.querySelectorAll("[data-ramp-set]").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-ramp-set]").forEach(o =>
+      o.setAttribute("aria-pressed", String(o === b)));
+    if (b.dataset.rampSet === "cvd") document.documentElement.setAttribute("data-ramp", "cvd");
+    else document.documentElement.removeAttribute("data-ramp");
+    paint();
+  }));
+
+  document.querySelectorAll("[data-metric]").forEach(b => b.addEventListener("click", () => {
+    document.querySelectorAll("[data-metric]").forEach(o =>
+      o.setAttribute("aria-pressed", String(o === b)));
+    hideValues = b.dataset.metric === "colour";
+    paint();
+  }));
+})();
+</script>
