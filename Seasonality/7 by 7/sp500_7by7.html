@@ -253,6 +253,9 @@
   .tip.on { opacity: 1; }
   .tip b { font-weight: 700; }
   .tip .muted { opacity: .72; }
+  @media (prefers-reduced-motion: reduce) {
+    .tip { transition: none; }
+  }
 
   /* --- method ------------------------------------------------------------- */
   .method {
