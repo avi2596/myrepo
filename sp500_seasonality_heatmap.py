@@ -1,5 +1,5 @@
 """
-S&P 500 (^GSPC) monthly seasonality heatmap.
+Monthly seasonality heatmap for any Yahoo Finance symbol — S&P 500 by default.
 
 Builds a Year x Month matrix of percentage returns and a summary panel holding
 the average, median, win rate and observation count for each calendar month.
@@ -10,10 +10,17 @@ month-to-date return (marked with * in the grid). Re-run the script after any
 month closes and that month's partial figure becomes its final one, so the
 averages stay current with no code change.
 
-    python sp500_seasonality_heatmap.py            # writes sp500_seasonality.png
-    python sp500_seasonality_heatmap.py --cvd-safe # red<->blue instead of red/green
-    python sp500_seasonality_heatmap.py --json out.json   # dump the numbers
-    python sp500_seasonality_heatmap.py --show     # open an interactive window
+    python sp500_seasonality_heatmap.py                   # PNG for ^GSPC
+    python sp500_seasonality_heatmap.py --ticker ^IXIC    # PNG for another symbol
+    python sp500_seasonality_heatmap.py --cvd-safe        # red<->blue, not red/green
+    python sp500_seasonality_heatmap.py --show            # interactive window
+
+The interactive page carries several symbols at once and switches between them
+in the browser. A published artifact cannot call Yahoo — a strict CSP blocks it —
+so every symbol the page offers has to be baked in here:
+
+    python sp500_seasonality_heatmap.py --html page.html --json data.json
+    python sp500_seasonality_heatmap.py --tickers '^GSPC,^IXIC,AAPL' --html page.html
 
 Requires: yfinance, pandas, numpy, matplotlib, seaborn
 """
@@ -32,6 +39,22 @@ TICKER = "^GSPC"
 N_YEARS = 25
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
           "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+
+# Symbols baked into the interactive page: the major indices, two commodities,
+# bitcoin, and a few megacaps — enough spread of asset class and volatility to
+# show that "seasonality" is not one shape. Override with --tickers.
+DEFAULT_BUNDLE = ["^GSPC", "^IXIC", "^DJI", "^RUT", "^FTSE", "^N225", "^GDAXI",
+                  "GC=F", "CL=F", "BTC-USD", "AAPL", "MSFT", "NVDA"]
+
+# Yahoo names the front futures contract, not the commodity ("Gold Aug 26"),
+# and its index names are inconsistent — pin the ones worth pinning.
+NAME_OVERRIDES = {
+    "^GSPC": "S&P 500", "^IXIC": "Nasdaq Composite",
+    "^DJI": "Dow Jones Industrial Average", "^RUT": "Russell 2000",
+    "^FTSE": "FTSE 100", "^N225": "Nikkei 225", "^GDAXI": "DAX",
+    "GC=F": "Gold (front future)", "CL=F": "Crude oil, WTI (front future)",
+    "BTC-USD": "Bitcoin",
+}
 
 
 # ---------------------------------------------------------------- data layer
@@ -201,6 +224,57 @@ def plot_seasonality(matrix: pd.DataFrame, summary: pd.DataFrame,
     return fig
 
 
+def display_name(ticker: str) -> str:
+    """Human-readable name for a symbol, pinned where Yahoo's is unhelpful."""
+    if ticker in NAME_OVERRIDES:
+        return NAME_OVERRIDES[ticker]
+    try:
+        info = yf.Ticker(ticker).info
+        return info.get("longName") or info.get("shortName") or ticker
+    except Exception:
+        return ticker            # a missing name must never sink the run
+
+
+def build_payload(ticker: str, name: str, matrix: pd.DataFrame,
+                  summary: pd.DataFrame, asof: pd.Timestamp) -> dict:
+    """Everything the interactive page needs to draw one symbol.
+
+    Colour limits ship per symbol: bitcoin's monthly range dwarfs the FTSE's,
+    and a scale wide enough for one leaves the other a uniform pale block.
+    """
+    grid_limit = float(np.nanmax(np.abs(matrix.to_numpy())))
+    strip_limit = float(np.nanmax(np.abs(summary.loc[["Average", "Median"]].to_numpy())))
+    return {
+        "ticker": ticker,
+        "name": name,
+        "asof": asof.strftime("%Y-%m-%d"),
+        "partial": {"year": int(asof.year), "month": MONTHS[asof.month - 1]},
+        "years": {str(y): [None if pd.isna(v) else round(float(v), 2)
+                           for v in matrix.loc[y]] for y in matrix.index},
+        # Explicit keys — a "Months" summary row would otherwise collide
+        # with the page's "months" name list.
+        "avg": [round(float(v), 2) for v in summary.loc["Average"]],
+        "median": [round(float(v), 2) for v in summary.loc["Median"]],
+        "win": [round(float(v), 1) for v in summary.loc["Win rate"]],
+        "n": [int(v) for v in summary.loc["Months"]],
+        "std": [round(float(v), 2) for v in matrix.std()],
+        "best": [round(float(v), 2) for v in matrix.max()],
+        "worst": [round(float(v), 2) for v in matrix.min()],
+        "best_year": [int(matrix[c].idxmax()) for c in MONTHS],
+        "worst_year": [int(matrix[c].idxmin()) for c in MONTHS],
+        # Round the limits outward to a clean step so the legend reads sanely.
+        "limit": round(max(grid_limit, 1.0) + 0.49),
+        "strip_limit": round(max(strip_limit, 0.5) * 1.15, 1),
+    }
+
+
+def load_one(ticker: str, first_year: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.Timestamp]:
+    """Fetch a symbol and reduce it to (matrix, summary, as-of date)."""
+    returns, asof = fetch_monthly_returns(ticker, first_year)
+    matrix = to_year_month_matrix(returns).loc[first_year:]
+    return matrix, summarise(matrix), asof
+
+
 # ------------------------------------------------------------- html refresh
 
 HTML_TAG = '<script type="application/json" id="data">'
@@ -239,6 +313,8 @@ def main() -> None:
     parser.add_argument("--cvd-safe", action="store_true",
                         help="use red<->blue instead of red/green")
     parser.add_argument("--out", default="sp500_seasonality.png")
+    parser.add_argument("--tickers", help="comma-separated symbols to bake into the page "
+                                          f"(default: {','.join(DEFAULT_BUNDLE)})")
     parser.add_argument("--json", help="also write the matrix and summary to this JSON file")
     parser.add_argument("--html", help="re-embed the fresh data into this HTML page, in place")
     parser.add_argument("--show", action="store_true")
@@ -250,9 +326,7 @@ def main() -> None:
     this_year = pd.Timestamp.today().year
     first_year = this_year - args.years
 
-    returns, asof = fetch_monthly_returns(args.ticker, first_year)
-    matrix = to_year_month_matrix(returns).loc[first_year:]
-    summary = summarise(matrix)
+    matrix, summary, asof = load_one(args.ticker, first_year)
     partial = (asof.year, MONTHS[asof.month - 1])
 
     pd.set_option("display.width", 200)
@@ -271,26 +345,35 @@ def main() -> None:
           f"and is included in the averages above.")
 
     if args.json or args.html:
-        payload = {
-            "ticker": args.ticker,
-            "asof": asof.strftime("%Y-%m-%d"),
-            "partial": {"year": partial[0], "month": partial[1]},
-            "months": MONTHS,
-            "years": {str(y): [None if pd.isna(v) else round(float(v), 2)
-                               for v in matrix.loc[y]] for y in matrix.index},
-            # Explicit keys — a "Months" summary row would otherwise collide
-            # with the "months" name list above.
-            "avg": [round(float(v), 2) for v in summary.loc["Average"]],
-            "median": [round(float(v), 2) for v in summary.loc["Median"]],
-            "win": [round(float(v), 1) for v in summary.loc["Win rate"]],
-            "n": [int(v) for v in summary.loc["Months"]],
-            "std": [round(float(v), 2) for v in matrix.std()],
-            "best": [round(float(v), 2) for v in matrix.max()],
-            "worst": [round(float(v), 2) for v in matrix.min()],
-            "best_year": [int(matrix[c].idxmax()) for c in MONTHS],
-            "worst_year": [int(matrix[c].idxmin()) for c in MONTHS],
-        }
-        blob = json.dumps(payload, separators=(",", ":"))
+        # The page ships every symbol it offers. The one drawn as the PNG leads
+        # the list so it is what the page opens on.
+        wanted = [t.strip() for t in args.tickers.split(",")] if args.tickers else list(DEFAULT_BUNDLE)
+        bundle = [args.ticker] + [t for t in wanted if t and t != args.ticker]
+
+        series, failed = {}, []
+        for sym in bundle:
+            try:
+                if sym == args.ticker:
+                    mtx, smry, when = matrix, summary, asof
+                else:
+                    mtx, smry, when = load_one(sym, first_year)
+                if mtx.empty:
+                    raise ValueError("no rows")
+                series[sym] = build_payload(sym, display_name(sym), mtx, smry, when)
+                print(f"  bundled {sym:<9} {display_name(sym)[:38]:<38} "
+                      f"{len(mtx)} years, through {when:%b %Y}")
+            except Exception as exc:                      # one bad symbol, not a dead run
+                failed.append(sym)
+                print(f"  SKIPPED {sym:<9} {type(exc).__name__}: {str(exc)[:60]}")
+
+        if not series:
+            raise SystemExit("No symbol could be fetched — refusing to write an empty page.")
+        if failed:
+            print(f"  ({len(failed)} symbol(s) skipped: {', '.join(failed)})")
+
+        blob = json.dumps({"months": MONTHS, "default": args.ticker,
+                           "tickers": list(series), "series": series},
+                          separators=(",", ":"))
 
         if args.json:
             with open(args.json, "w") as fh:
