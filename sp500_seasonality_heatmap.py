@@ -1,4 +1,3 @@
-
 """
 Monthly seasonality heatmap for any Yahoo Finance symbol — S&P 500 by default.
 
@@ -60,16 +59,21 @@ NAME_OVERRIDES = {
 
 # ---------------------------------------------------------------- data layer
 
-def fetch_monthly_returns(ticker: str, first_year: int) -> tuple[pd.Series, pd.Timestamp]:
+def fetch_monthly_returns(ticker: str, first_year: int
+                          ) -> tuple[pd.Series, pd.Timestamp, dict | None]:
     """Monthly % returns for `ticker` from Jan(first_year) through today.
 
     Downloads monthly bars with auto_adjust=True, so 'Close' is the adjusted
     close (split- and dividend-adjusted). We start one month early so that the
     January return of the first year has a prior close to compare against.
 
-    Returns the series plus the date its last value is good through. yfinance
-    stamps each monthly bar with the first day of the month, and the bar for the
-    month in progress carries the latest close — so that last entry is a
+    Returns three things: the monthly series; the date its last value is good
+    through; and the year-to-date figure measured from this year's FIRST OPEN to
+    the latest close, with both prices and both dates so the page can show its
+    working.
+
+    yfinance stamps each monthly bar with the first day of the month, and the bar
+    for the month in progress carries the latest close — so that last entry is a
     month-to-date return. It is kept, not dropped; the caller marks it partial.
     """
     today = pd.Timestamp.today().normalize()
@@ -91,22 +95,42 @@ def fetch_monthly_returns(ticker: str, first_year: int) -> tuple[pd.Series, pd.T
 
     returns = close.pct_change().mul(100).dropna()
 
-    # The monthly bar is stamped with the 1st, which would misreport how current
-    # the partial month is — ask for recent daily bars to get the real last close.
-    # Yahoo pads the range with empty rows for sessions it has no print for yet,
-    # so drop those before taking the last one, or the page claims to be a day
-    # more current than the data actually is.
-    daily = yf.download(ticker, start=(today - pd.Timedelta(days=14)).strftime("%Y-%m-%d"),
+    # Daily bars from the start of this year: they carry the year's first OPEN
+    # (the year-to-date baseline) and the real last close. The monthly bar is
+    # stamped with the 1st, so it cannot tell us how current the partial month is.
+    daily_start = min(pd.Timestamp(year=today.year, month=1, day=1),
+                      today - pd.Timedelta(days=14))
+    daily = yf.download(ticker, start=daily_start.strftime("%Y-%m-%d"),
                         interval="1d", auto_adjust=True, progress=False)
-    if not daily.empty:
-        closes = daily["Close"]
-        if isinstance(closes, pd.DataFrame):
-            closes = closes.iloc[:, 0]
-        closes = closes.dropna()
-    else:
-        closes = pd.Series(dtype=float)
+
+    def column(frame, field):
+        if frame is None or frame.empty or field not in frame:
+            return pd.Series(dtype=float)
+        col = frame[field]
+        if isinstance(col, pd.DataFrame):
+            col = col.iloc[:, 0]
+        # Yahoo pads the range with empty rows for sessions it has no print for
+        # yet; drop those or the page claims to be more current than the data is.
+        return col.dropna()
+
+    closes, opens = column(daily, "Close"), column(daily, "Open")
     asof = closes.index[-1] if not closes.empty else returns.index[-1]
-    return returns, pd.Timestamp(asof)
+
+    # Year to date, measured from this year's first open to the latest close.
+    ytd = None
+    this_year_opens = opens[opens.index.year == today.year]
+    this_year_closes = closes[closes.index.year == today.year]
+    if not this_year_opens.empty and not this_year_closes.empty:
+        first_open, last_close = float(this_year_opens.iloc[0]), float(this_year_closes.iloc[-1])
+        if first_open > 0:
+            ytd = {
+                "open": round(first_open, 2),
+                "open_date": this_year_opens.index[0].strftime("%Y-%m-%d"),
+                "close": round(last_close, 2),
+                "close_date": this_year_closes.index[-1].strftime("%Y-%m-%d"),
+                "pct": round((last_close / first_open - 1) * 100, 2),
+            }
+    return returns, pd.Timestamp(asof), ytd
 
 
 def to_year_month_matrix(returns: pd.Series) -> pd.DataFrame:
@@ -247,7 +271,7 @@ def display_name(ticker: str) -> str:
 
 
 def build_payload(ticker: str, name: str, matrix: pd.DataFrame,
-                  summary: pd.DataFrame, asof: pd.Timestamp) -> dict:
+                  summary: pd.DataFrame, asof: pd.Timestamp, ytd: dict | None) -> dict:
     """Everything the interactive page needs to draw one symbol.
 
     Colour limits ship per symbol: bitcoin's monthly range dwarfs the FTSE's,
@@ -260,6 +284,9 @@ def build_payload(ticker: str, name: str, matrix: pd.DataFrame,
         "name": name,
         "asof": asof.strftime("%Y-%m-%d"),
         "partial": {"year": int(asof.year), "month": MONTHS[asof.month - 1]},
+        # Open-to-close for the year, with the prices behind it so the page can
+        # show its working rather than assert a number.
+        "ytd": ytd,
         "years": {str(y): [None if pd.isna(v) else round(float(v), 2)
                            for v in matrix.loc[y]] for y in matrix.index},
         # Explicit keys — a "Months" summary row would otherwise collide
@@ -279,11 +306,12 @@ def build_payload(ticker: str, name: str, matrix: pd.DataFrame,
     }
 
 
-def load_one(ticker: str, first_year: int) -> tuple[pd.DataFrame, pd.DataFrame, pd.Timestamp]:
-    """Fetch a symbol and reduce it to (matrix, summary, as-of date)."""
-    returns, asof = fetch_monthly_returns(ticker, first_year)
+def load_one(ticker: str, first_year: int
+             ) -> tuple[pd.DataFrame, pd.DataFrame, pd.Timestamp, dict | None]:
+    """Fetch a symbol and reduce it to (matrix, summary, as-of date, ytd)."""
+    returns, asof, ytd = fetch_monthly_returns(ticker, first_year)
     matrix = to_year_month_matrix(returns).loc[first_year:]
-    return matrix, summarise(matrix), asof
+    return matrix, summarise(matrix), asof, ytd
 
 
 # ------------------------------------------------------------- html refresh
@@ -337,7 +365,7 @@ def main() -> None:
     this_year = pd.Timestamp.today().year
     first_year = this_year - args.years
 
-    matrix, summary, asof = load_one(args.ticker, first_year)
+    matrix, summary, asof, ytd = load_one(args.ticker, first_year)
     partial = (asof.year, MONTHS[asof.month - 1])
 
     pd.set_option("display.width", 200)
@@ -354,6 +382,9 @@ def main() -> None:
           f"{summary.loc['Win rate', worst]:.0f}% of {summary.loc['Months', worst]:.0f} positive)")
     print(f"{partial[0]} {partial[1]} is month-to-date through {asof:%d %b %Y} "
           f"and is included in the averages above.")
+    if ytd:
+        print(f"Year to date: {ytd['pct']:+.2f}%  "
+              f"({ytd['open']:,.2f} open {ytd['open_date']} → {ytd['close']:,.2f} close {ytd['close_date']})")
 
     if args.json or args.html:
         # The page ships every symbol it offers. The one drawn as the PNG leads
@@ -365,12 +396,12 @@ def main() -> None:
         for sym in bundle:
             try:
                 if sym == args.ticker:
-                    mtx, smry, when = matrix, summary, asof
+                    mtx, smry, when, sym_ytd = matrix, summary, asof, ytd
                 else:
-                    mtx, smry, when = load_one(sym, first_year)
+                    mtx, smry, when, sym_ytd = load_one(sym, first_year)
                 if mtx.empty:
                     raise ValueError("no rows")
-                series[sym] = build_payload(sym, display_name(sym), mtx, smry, when)
+                series[sym] = build_payload(sym, display_name(sym), mtx, smry, when, sym_ytd)
                 print(f"  bundled {sym:<9} {display_name(sym)[:38]:<38} "
                       f"{len(mtx)} years, through {when:%b %Y}")
             except Exception as exc:                      # one bad symbol, not a dead run
