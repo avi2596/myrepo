@@ -1,0 +1,574 @@
+<title>S&P 500: strong first half, then what?</title>
+
+<style>
+  /* Tokens. Dark values are declared under both scopes: the media query covers
+     the OS setting, the data-theme scope covers a viewer's toggle, and the
+     toggle has to win in both directions. */
+  :root {
+    color-scheme: light;
+    --page:      #f9f9f7;
+    --surface:   #fcfcfb;
+    --ink:       #0b0b0b;
+    --ink-2:     #52514e;
+    --ink-3:     #898781;
+    --rule:      #e1e0d9;
+    --neutral:   #f0efec;   /* diverging midpoint: nothing to show */
+    --chip:      #eeede8;
+    --head:      #33322f;
+    --tip-bg:    #22211f;
+    --tip-ink:   #fcfcfb;
+    --shadow:    0 1px 2px rgba(11,11,11,.06), 0 8px 24px rgba(11,11,11,.07);
+
+    /* Polarity pair. Both fills carry white text at >= 4.5:1 and clear 3:1
+       against either surface, so they need no per-theme step. */
+    --gain: #157f3c;
+    --loss: #c0392b;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page:    #0d0d0d;
+      --surface: #1a1a19;
+      --ink:     #ffffff;
+      --ink-2:   #c3c2b7;
+      --ink-3:   #898781;
+      --rule:    #2c2c2a;
+      --neutral: #383835;
+      --chip:    #2c2c2a;
+      --head:    #2c2c2a;
+      --tip-bg:  #f0efec;
+      --tip-ink: #0b0b0b;
+      --shadow:  0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page:    #0d0d0d;
+    --surface: #1a1a19;
+    --ink:     #ffffff;
+    --ink-2:   #c3c2b7;
+    --ink-3:   #898781;
+    --rule:    #2c2c2a;
+    --neutral: #383835;
+    --chip:    #2c2c2a;
+    --head:    #2c2c2a;
+    --tip-bg:  #f0efec;
+    --tip-ink: #0b0b0b;
+    --shadow:  0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
+  }
+
+  /* Set explicitly rather than inherited: this file is a fragment, so it may
+     be opened directly (quirks mode) as well as wrapped and published. */
+  .wrap, .wrap *, .wrap *::before, .wrap *::after { box-sizing: border-box; }
+
+  /* The page plane, so the surface reaches the bottom of a tall window rather
+     than stopping where the content does. */
+  html, body { margin: 0; background: var(--page); }
+
+  .wrap {
+    min-height: 100vh;
+    margin: 0;
+    padding: 34px 22px 56px;
+    background: var(--page);
+    color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .inner { max-width: 760px; margin: 0 auto; }
+
+  h1 {
+    margin: 0 0 6px;
+    font-size: 25px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -.015em;
+  }
+  .sub { margin: 0 0 4px; color: var(--ink-2); font-size: 13.5px; }
+  .sub strong { color: var(--ink); font-weight: 600; }
+  .asof { margin: 0 0 26px; color: var(--ink-3); font-size: 12.5px; }
+
+  /* --- KPI row ------------------------------------------------------------ */
+  .tiles {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 0 0 26px;
+  }
+  .tile {
+    flex: 1 1 190px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+  }
+  .tile .label {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .tile .value {
+    margin-top: 5px;
+    font-size: 27px;
+    line-height: 1.1;
+    font-weight: 700;
+    letter-spacing: -.02em;
+  }
+  .tile .note { margin-top: 3px; font-size: 12.5px; color: var(--ink-2); }
+
+  /* --- controls ----------------------------------------------------------- */
+  .controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin: 0 0 12px;
+  }
+  .legend { display: flex; align-items: center; gap: 14px; font-size: 12.5px; color: var(--ink-2); }
+  .legend span { display: inline-flex; align-items: center; gap: 6px; }
+  .swatch {
+    width: 11px; height: 11px;
+    border-radius: 3px;
+    display: inline-block;
+  }
+  .swatch.up { background: var(--gain); }
+  .swatch.down { background: var(--loss); }
+  .toggle {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    color: var(--ink-2);
+    cursor: pointer;
+    user-select: none;
+  }
+  .toggle input { margin: 0; cursor: pointer; }
+
+  /* --- table -------------------------------------------------------------- */
+  .scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: separate;
+    border-spacing: 2px;   /* the 2px surface gap between fills */
+    font-variant-numeric: tabular-nums;
+  }
+  /* Give the two value columns the bulk of the width — they carry the data;
+     the year is a label. */
+  col.c-year { width: 30%; }
+  col.c-half { width: 35%; }
+  caption {
+    caption-side: top;
+    text-align: left;
+    padding: 0 0 8px;
+    font-size: 12.5px;
+    color: var(--ink-3);
+  }
+  thead th {
+    padding: 11px 14px;
+    background: var(--head);
+    color: #fcfcfb;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .03em;
+    text-align: right;
+    white-space: nowrap;
+  }
+  thead th:first-child { text-align: left; border-radius: 6px 0 0 6px; }
+  thead th:last-child { border-radius: 0 6px 6px 0; }
+
+  td, tbody th {
+    padding: 10px 14px;
+    font-size: 14.5px;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .year {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    color: var(--ink);
+    text-align: left;
+    font-weight: 700;
+  }
+  td.cell { border-radius: 6px; color: #ffffff; }
+  td.cell.up { background: var(--gain); }
+  td.cell.down { background: var(--loss); }
+  td.cell.none {
+    background: var(--neutral);
+    color: var(--ink-3);
+    font-weight: 500;
+  }
+  /* A cell whose period is still running: same fill, hatched so "not final"
+     survives printing and greyscale, not just the asterisk. */
+  td.cell.partial {
+    background-image: repeating-linear-gradient(
+      135deg, rgba(255,255,255,.20) 0 5px, rgba(255,255,255,0) 5px 10px);
+  }
+  td.cell[tabindex] { cursor: help; }
+  td.cell:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 2px;
+  }
+  tr.live .year {
+    background: var(--chip);
+    border-style: dashed;
+  }
+  .flag {
+    display: inline-block;
+    margin-left: 7px;
+    padding: 1px 6px;
+    border-radius: 20px;
+    background: var(--chip);
+    color: var(--ink-2);
+    font-size: 10.5px;
+    font-weight: 600;
+    letter-spacing: .03em;
+    text-transform: uppercase;
+    vertical-align: 1px;
+  }
+  tr.live .year .flag { background: var(--surface); }
+
+  /* --- tooltip ------------------------------------------------------------ */
+  .tip {
+    position: fixed;
+    z-index: 20;
+    max-width: 260px;
+    padding: 9px 11px;
+    background: var(--tip-bg);
+    color: var(--tip-ink);
+    border-radius: 8px;
+    font-size: 12.5px;
+    line-height: 1.45;
+    font-variant-numeric: tabular-nums;
+    box-shadow: 0 6px 22px rgba(0,0,0,.28);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity .1s ease;
+  }
+  .tip.on { opacity: 1; }
+  .tip b { font-weight: 700; }
+  .tip .muted { opacity: .72; }
+
+  /* --- method ------------------------------------------------------------- */
+  .method {
+    margin: 28px 0 0;
+    padding: 16px 18px;
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 10px;
+    font-size: 13px;
+    line-height: 1.6;
+    color: var(--ink-2);
+  }
+  .method h2 {
+    margin: 0 0 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .method p { margin: 0 0 8px; }
+  .method p:last-child { margin: 0; }
+  .method code {
+    padding: 1px 5px;
+    border-radius: 4px;
+    background: var(--chip);
+    font: 12px ui-monospace, SFMono-Regular, Menlo, monospace;
+    color: var(--ink);
+  }
+  .empty { padding: 40px 0; color: var(--ink-3); }
+
+  @media (max-width: 520px) {
+    h1 { font-size: 21px; }
+    .wrap { padding: 24px 14px 44px; }
+    td, th { padding-left: 10px; padding-right: 10px; }
+  }
+</style>
+
+<div class="wrap">
+  <div class="inner">
+    <h1 id="headline">Loading…</h1>
+    <p class="sub" id="standfirst"></p>
+    <p class="asof" id="asof"></p>
+
+    <div class="tiles" id="tiles"></div>
+
+    <div class="controls">
+      <div class="legend">
+        <span><i class="swatch up"></i> gained</span>
+        <span><i class="swatch down"></i> lost</span>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="cvd"> colour-blind safe (blue for gains)
+      </label>
+    </div>
+
+    <div class="scroll">
+      <table id="table">
+        <caption id="caption"></caption>
+      </table>
+    </div>
+
+    <div class="method" id="method"></div>
+  </div>
+  <div class="tip" id="tip" role="tooltip" aria-hidden="true"></div>
+</div>
+
+<script type="application/json" id="data">
+{"ticker":"^GSPC","name":"S&P 500","threshold":7.0,"asof":"2026-07-23","first_year":1985,"last_year":2026,"rows":[{"year":1985,"halves":{"jan_jul":{"pct":14.19,"final":true,"open":167.2,"close":190.92,"from":"1985-01-02","through":"1985-07-31"},"aug_dec":{"pct":10.66,"final":true,"open":190.92,"close":211.28,"from":"1985-08-01","through":"1985-12-31"}}},{"year":1986,"halves":{"jan_jul":{"pct":11.76,"final":true,"open":211.28,"close":236.12,"from":"1986-01-02","through":"1986-07-31"},"aug_dec":{"pct":2.56,"final":true,"open":236.12,"close":242.17,"from":"1986-08-01","through":"1986-12-31"}}},{"year":1987,"halves":{"jan_jul":{"pct":31.59,"final":true,"open":242.17,"close":318.66,"from":"1987-01-02","through":"1987-07-31"},"aug_dec":{"pct":-22.45,"final":true,"open":318.62,"close":247.08,"from":"1987-08-03","through":"1987-12-31"}}},{"year":1988,"halves":{"jan_jul":{"pct":10.08,"final":true,"open":247.1,"close":272.02,"from":"1988-01-04","through":"1988-07-29"},"aug_dec":{"pct":2.09,"final":true,"open":272.03,"close":277.72,"from":"1988-08-01","through":"1988-12-30"}}},{"year":1989,"halves":{"jan_jul":{"pct":24.61,"final":true,"open":277.72,"close":346.08,"from":"1989-01-03","through":"1989-07-31"},"aug_dec":{"pct":2.12,"final":true,"open":346.08,"close":353.4,"from":"1989-08-01","through":"1989-12-29"}}},{"year":1991,"halves":{"jan_jul":{"pct":17.45,"final":true,"open":330.2,"close":387.81,"from":"1991-01-02","through":"1991-07-31"},"aug_dec":{"pct":7.55,"final":true,"open":387.81,"close":417.09,"from":"1991-08-01","through":"1991-12-31"}}},{"year":1995,"halves":{"jan_jul":{"pct":22.4,"final":true,"open":459.21,"close":562.06,"from":"1995-01-03","through":"1995-07-31"},"aug_dec":{"pct":9.58,"final":true,"open":562.06,"close":615.93,"from":"1995-08-01","through":"1995-12-29"}}},{"year":1997,"halves":{"jan_jul":{"pct":28.83,"final":true,"open":740.74,"close":954.31,"from":"1997-01-02","through":"1997-07-31"},"aug_dec":{"pct":1.69,"final":true,"open":954.29,"close":970.43,"from":"1997-08-01","through":"1997-12-31"}}},{"year":1998,"halves":{"jan_jul":{"pct":15.48,"final":true,"open":970.43,"close":1120.67,"from":"1998-01-02","through":"1998-07-31"},"aug_dec":{"pct":9.69,"final":true,"open":1120.67,"close":1229.23,"from":"1998-08-03","through":"1998-12-31"}}},{"year":1999,"halves":{"jan_jul":{"pct":8.09,"final":true,"open":1229.23,"close":1328.72,"from":"1999-01-04","through":"1999-07-30"},"aug_dec":{"pct":10.58,"final":true,"open":1328.72,"close":1469.25,"from":"1999-08-02","through":"1999-12-31"}}},{"year":2003,"halves":{"jan_jul":{"pct":12.56,"final":true,"open":879.82,"close":990.31,"from":"2003-01-02","through":"2003-07-31"},"aug_dec":{"pct":12.28,"final":true,"open":990.31,"close":1111.92,"from":"2003-08-01","through":"2003-12-31"}}},{"year":2009,"halves":{"jan_jul":{"pct":9.36,"final":true,"open":902.99,"close":987.48,"from":"2009-01-02","through":"2009-07-31"},"aug_dec":{"pct":12.61,"final":true,"open":990.22,"close":1115.1,"from":"2009-08-03","through":"2009-12-31"}}},{"year":2012,"halves":{"jan_jul":{"pct":9.57,"final":true,"open":1258.86,"close":1379.32,"from":"2012-01-03","through":"2012-07-31"},"aug_dec":{"pct":3.4,"final":true,"open":1379.32,"close":1426.19,"from":"2012-08-01","through":"2012-12-31"}}},{"year":2013,"halves":{"jan_jul":{"pct":18.2,"final":true,"open":1426.19,"close":1685.73,"from":"2013-01-02","through":"2013-07-31"},"aug_dec":{"pct":9.41,"final":true,"open":1689.42,"close":1848.36,"from":"2013-08-01","through":"2013-12-31"}}},{"year":2017,"halves":{"jan_jul":{"pct":9.71,"final":true,"open":2251.57,"close":2470.3,"from":"2017-01-03","through":"2017-07-31"},"aug_dec":{"pct":7.93,"final":true,"open":2477.1,"close":2673.61,"from":"2017-08-01","through":"2017-12-29"}}},{"year":2019,"halves":{"jan_jul":{"pct":20.32,"final":true,"open":2476.96,"close":2980.38,"from":"2019-01-02","through":"2019-07-31"},"aug_dec":{"pct":8.4,"final":true,"open":2980.32,"close":3230.78,"from":"2019-08-01","through":"2019-12-31"}}},{"year":2021,"halves":{"jan_jul":{"pct":16.75,"final":true,"open":3764.61,"close":4395.26,"from":"2021-01-04","through":"2021-07-30"},"aug_dec":{"pct":8.15,"final":true,"open":4406.86,"close":4766.18,"from":"2021-08-02","through":"2021-12-31"}}},{"year":2023,"halves":{"jan_jul":{"pct":19.09,"final":true,"open":3853.29,"close":4588.96,"from":"2023-01-03","through":"2023-07-31"},"aug_dec":{"pct":4.17,"final":true,"open":4578.83,"close":4769.83,"from":"2023-08-01","through":"2023-12-29"}}},{"year":2024,"halves":{"jan_jul":{"pct":16.38,"final":true,"open":4745.2,"close":5522.3,"from":"2024-01-02","through":"2024-07-31"},"aug_dec":{"pct":6.21,"final":true,"open":5537.84,"close":5881.63,"from":"2024-08-01","through":"2024-12-31"}}},{"year":2025,"halves":{"jan_jul":{"pct":7.39,"final":true,"open":5903.26,"close":6339.39,"from":"2025-01-02","through":"2025-07-31"},"aug_dec":{"pct":8.88,"final":true,"open":6287.28,"close":6845.5,"from":"2025-08-01","through":"2025-12-31"}}},{"year":2026,"halves":{"jan_jul":{"pct":7.71,"final":false,"open":6878.11,"close":7408.3,"from":"2026-01-02","through":"2026-07-23"},"aug_dec":{"pct":null,"final":false,"open":null,"close":null,"from":null,"through":null}}}],"summary":{"qualifying":21,"settled":20,"up":19,"hit_rate":95.0,"avg":5.78,"median":8.04,"best":12.61,"worst":-22.45},"baseline":{"years":41,"first_year":1985,"last_year":2025,"hit_rate":75.6,"avg":3.0,"median":4.09}}
+</script>
+
+<script>
+(function () {
+  "use strict";
+
+  var HALVES = [
+    { key: "jan_jul", label: "Jan-Jul", full: "January to July" },
+    { key: "aug_dec", label: "Aug-Dec", full: "August to December" }
+  ];
+
+  var raw = document.getElementById("data").textContent;
+  var D;
+  try { D = JSON.parse(raw); } catch (e) { D = null; }
+
+  var table = document.getElementById("table");
+
+  if (!D || !D.rows || !D.rows.length) {
+    document.getElementById("headline").textContent = "No data embedded yet";
+    document.getElementById("standfirst").innerHTML =
+      "Run <code>python sp500_7by7.py --html --json</code> to fill this page in.";
+    table.style.display = "none";
+    document.getElementById("method").style.display = "none";
+    return;
+  }
+
+  // ---------------------------------------------------------- formatting
+  function pct(v, digits) {
+    if (v === null || v === undefined) return "—";
+    return (v >= 0 ? "+" : "") + v.toFixed(digits === undefined ? 2 : digits) + "%";
+  }
+  function price(v) {
+    if (v === null || v === undefined) return "—";
+    return v.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+  function longDate(iso) {
+    if (!iso) return "—";
+    var p = iso.split("-");
+    var months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+    return Number(p[2]) + " " + months[Number(p[1]) - 1] + " " + p[0];
+  }
+  function plural(n, word) { return n + " " + word + (n === 1 ? "" : "s"); }
+
+  var thresh = (D.threshold % 1 === 0) ? String(D.threshold) : String(D.threshold);
+  var S = D.summary || {};
+  var B = D.baseline || {};
+
+  // ------------------------------------------------------------- headline
+  document.getElementById("headline").textContent =
+    D.name + ": years up more than " + thresh + "% through July";
+
+  var live = D.rows.filter(function (r) {
+    return !r.halves.jan_jul.final || !r.halves.aug_dec.final;
+  });
+
+  var lead;
+  if (S.settled && S.hit_rate !== null) {
+    lead = "Since " + D.first_year + ", " + plural(S.qualifying, "year") + " gained more than " +
+      thresh + "% over January to July. Of the <strong>" + S.settled +
+      "</strong> whose full year is complete, August to December was positive <strong>" +
+      S.up + "</strong> times — <strong>" + S.hit_rate.toFixed(0) + "%</strong> of them.";
+  } else {
+    lead = "Since " + D.first_year + ", " + plural(S.qualifying, "year") +
+      " gained more than " + thresh + "% over January to July.";
+  }
+  document.getElementById("standfirst").innerHTML = lead;
+
+  document.getElementById("asof").textContent =
+    D.ticker + " · prices through " + longDate(D.asof) +
+    (live.length ? " · " + live[0].year + " is still filling in" : "");
+
+  // ---------------------------------------------------------------- tiles
+  var tiles = [];
+  if (S.settled) {
+    tiles.push({
+      label: "Aug–Dec positive",
+      value: S.up + " of " + S.settled,
+      note: S.hit_rate.toFixed(0) + "% of completed qualifying years"
+    });
+    tiles.push({
+      label: "Average Aug–Dec",
+      value: pct(S.avg),
+      note: "median " + pct(S.median) + " · worst " + pct(S.worst)
+    });
+  }
+  if (B.years) {
+    var gap = (S.avg !== null && S.avg !== undefined) ? S.avg - B.avg : null;
+    tiles.push({
+      label: "Every year, for scale",
+      value: pct(B.avg),
+      // Non-breaking space: "pts" must not be orphaned onto its own line.
+      note: "positive " + B.hit_rate.toFixed(0) + "% of " + B.years + " years" +
+            (gap === null ? "" : " · gap " + pct(gap, 2).replace("%", " pts"))
+    });
+  }
+  document.getElementById("tiles").innerHTML = tiles.map(function (t) {
+    return '<div class="tile"><div class="label"></div>' +
+           '<div class="value"></div><div class="note"></div></div>';
+  }).join("");
+  // Text set via textContent, never innerHTML: these strings carry numbers, and
+  // building them as markup is how a stray character becomes broken layout.
+  Array.prototype.forEach.call(document.querySelectorAll("#tiles .tile"), function (el, i) {
+    el.querySelector(".label").textContent = tiles[i].label;
+    el.querySelector(".value").textContent = tiles[i].value;
+    el.querySelector(".note").textContent = tiles[i].note;
+  });
+
+  // ---------------------------------------------------------------- table
+  document.getElementById("caption").textContent =
+    "One row per qualifying year, " + D.first_year + "–" + D.last_year +
+    ". Hover or focus a cell for the prices behind it.";
+
+  var cols = document.createElement("colgroup");
+  ["c-year"].concat(HALVES.map(function () { return "c-half"; })).forEach(function (cls) {
+    var col = document.createElement("col");
+    col.className = cls;
+    cols.appendChild(col);
+  });
+  table.appendChild(cols);
+
+  var head = document.createElement("thead");
+  var hr = document.createElement("tr");
+  ["Year"].concat(HALVES.map(function (h) { return h.label; })).forEach(function (label) {
+    var th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = label;
+    hr.appendChild(th);
+  });
+  head.appendChild(hr);
+  table.appendChild(head);
+
+  var body = document.createElement("tbody");
+
+  D.rows.forEach(function (row) {
+    var tr = document.createElement("tr");
+    var unfinished = !row.halves.jan_jul.final || !row.halves.aug_dec.final;
+    if (unfinished) tr.className = "live";
+
+    // A <th scope="row"> rather than a <td>: it labels the row for screen
+    // readers, so a cell read out of context still says which year it is.
+    var yearCell = document.createElement("th");
+    yearCell.scope = "row";
+    yearCell.className = "year";
+    yearCell.textContent = row.year;
+    if (unfinished) {
+      var flag = document.createElement("span");
+      flag.className = "flag";
+      flag.textContent = "in progress";
+      yearCell.appendChild(flag);
+    }
+    tr.appendChild(yearCell);
+
+    HALVES.forEach(function (half) {
+      var d = row.halves[half.key];
+      var td = document.createElement("td");
+      var has = d.pct !== null && d.pct !== undefined;
+      td.className = "cell " + (!has ? "none" : (d.pct > 0 ? "up" : "down")) +
+                     (has && !d.final ? " partial" : "");
+      td.textContent = has ? pct(d.pct) + (d.final ? "" : "*") : "—";
+      td.setAttribute("tabindex", "0");
+
+      // Tooltip text: the working behind the percentage, or why there is none.
+      var tip;
+      if (!has) {
+        tip = "<b>" + row.year + " " + half.full + "</b><br>" +
+              '<span class="muted">Has not started yet — it fills in as the ' +
+              "year goes on.</span>";
+      } else {
+        tip = "<b>" + row.year + " " + half.full + "</b><br>" +
+              price(d.open) + " open " + longDate(d.from) + "<br>" +
+              price(d.close) + " close " + longDate(d.through) + "<br>" +
+              "<b>" + pct(d.pct) + "</b>" +
+              (d.final ? "" : '<br><span class="muted">Still running — not final.</span>');
+      }
+      td.setAttribute("data-tip", tip);
+      tr.appendChild(td);
+    });
+
+    body.appendChild(tr);
+  });
+  table.appendChild(body);
+
+  // -------------------------------------------------------------- tooltip
+  var tip = document.getElementById("tip");
+
+  function show(el) {
+    tip.innerHTML = el.getAttribute("data-tip");
+    tip.classList.add("on");
+    tip.setAttribute("aria-hidden", "false");
+    var r = el.getBoundingClientRect();
+    var t = tip.getBoundingClientRect();
+    var left = r.left + r.width / 2 - t.width / 2;
+    var top = r.top - t.height - 9;
+    // Keep it on screen: flip below when it would clip the top, clamp sideways.
+    if (top < 6) top = r.bottom + 9;
+    left = Math.max(8, Math.min(left, window.innerWidth - t.width - 8));
+    tip.style.left = left + "px";
+    tip.style.top = top + "px";
+  }
+  function hide() {
+    tip.classList.remove("on");
+    tip.setAttribute("aria-hidden", "true");
+  }
+
+  Array.prototype.forEach.call(table.querySelectorAll("td.cell"), function (td) {
+    td.addEventListener("mouseenter", function () { show(td); });
+    td.addEventListener("mouseleave", hide);
+    td.addEventListener("focus", function () { show(td); });
+    td.addEventListener("blur", hide);
+  });
+  window.addEventListener("scroll", hide, true);
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape") hide();
+  });
+
+  // ------------------------------------------------- colour-blind-safe mode
+  // Red/green is the requested coding, but it is the one pair ~8% of men
+  // cannot separate. Blue for gains keeps the polarity legible; the sign in
+  // every cell means colour is never the only channel either way.
+  var wrap = document.querySelector(".wrap");
+  document.getElementById("cvd").addEventListener("change", function () {
+    wrap.style.setProperty("--gain", this.checked ? "#256abf" : "#157f3c");
+  });
+
+  // ---------------------------------------------------------------- method
+  var note = [];
+  note.push("<h2>Method</h2>");
+  note.push("<p>Each half is measured from its <b>own first open to its last close</b> — " +
+    "January's opening print to July's final close, then August's opening print to the " +
+    "last close of the year. Adjusted prices from Yahoo Finance; " + D.ticker +
+    " is a price index, so these are price returns and exclude dividends.</p>");
+  note.push("<p>A year appears here the moment it clears " + thresh +
+    "% over January to July. The <b>in progress</b> row is the year still running: " +
+    "its Jan-Jul figure is a running total until July closes, and Aug-Dec stays empty " +
+    "until August starts, then fills in as the rest of the year happens. " +
+    "Figures marked <b>*</b> are not final, and unfinished years are left out of the " +
+    "averages above.</p>");
+  if (B.years) {
+    note.push("<p>The comparison tile is August to December for <b>every</b> year " +
+      B.first_year + "–" + B.last_year + ", qualifying or not. Without it a hit rate " +
+      "says nothing: if the back half of the year is usually positive anyway, a strong " +
+      "first half has told you nothing.</p>");
+  }
+  note.push("<p>Regenerate with <code>python sp500_7by7.py --html --json</code>. " +
+    "Every number, heading and note on this page is derived from the embedded data " +
+    "block, so a refresh restates all of it.</p>");
+  document.getElementById("method").innerHTML = note.join("");
+})();
+</script>
