@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S&P 500 market breadth, 2026</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+    --ink-3: #898781; --rule: #e1e0d9; --chip: #eeede8;
+    --above: #1f5fbf; --below: #c0392b;
+    --shadow: 0 1px 2px rgba(11,11,11,.06), 0 8px 24px rgba(11,11,11,.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+      --ink-3: #898781; --rule: #2c2c2a; --chip: #2c2c2a;
+      --above: #7aa9f0; --below: #ef7d6d;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+    --ink-3: #898781; --rule: #2c2c2a; --chip: #2c2c2a;
+    --above: #7aa9f0; --below: #ef7d6d;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--page); }
+  body {
+    padding: 34px 22px 56px; color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .inner { max-width: 900px; margin: 0 auto; }
+  h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -.015em; }
+  .sub { margin: 0 0 22px; color: var(--ink-2); font-size: 13.5px; }
+  .years { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; }
+  .years a, .years span {
+    padding: 4px 11px; border-radius: 999px; font-size: 13px;
+    text-decoration: none; background: var(--chip); color: var(--ink-2);
+    border: 1px solid transparent;
+  }
+  .years a:hover { color: var(--ink); border-color: var(--rule); }
+  .years .here { background: var(--ink); color: var(--page); font-weight: 600; }
+
+  figure {
+    margin: 0 0 22px; padding: 14px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+  }
+  figure img { display: block; width: 100%; height: auto; border-radius: 6px; }
+
+  .scroll {
+    max-height: 620px; overflow: auto; border: 1px solid var(--rule);
+    border-radius: 12px; background: var(--surface); box-shadow: var(--shadow);
+  }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 14px; text-align: right; white-space: nowrap; }
+  th {
+    position: sticky; top: 0; z-index: 1; background: var(--surface);
+    font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--ink-3); font-weight: 600; box-shadow: inset 0 -1px var(--rule);
+  }
+  td { border-top: 1px solid var(--rule); font-size: 13.5px; }
+  tbody tr:first-child td { border-top: 0; }
+  th:first-child, td:first-child { text-align: left; }
+  td.date { color: var(--ink-2); }
+  td.above { color: var(--above); }
+  td.below { color: var(--below); }
+  tbody tr:hover td { background: var(--chip); }
+
+  footer { margin: 24px 0 0; color: var(--ink-3); font-size: 12.5px; }
+  footer a { color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="inner">
+<h1>S&amp;P 500 market breadth, 2026</h1>
+<p class="sub">Share of index members trading above and below their own moving
+average, one row per session · in progress — 139 sessions through 23 Jul 2026</p>
+<nav class="years"><a href="index.html">All years</a><a href="breadth_2025.html">2025</a><span class="here">2026</span></nav>
+<figure><img src="breadth_2026_20ma.png" alt="S&P 500 members above and below their 20-day moving average in 2026"></figure><figure><img src="breadth_2026_50ma.png" alt="S&P 500 members above and below their 50-day moving average in 2026"></figure>
+<div class="scroll"><table><thead><tr><th>Date</th><th>Above 20-day MA</th><th>Below 20-day MA</th><th>Above 50-day MA</th><th>Below 50-day MA</th></tr></thead><tbody>
+<tr><td class="date">02 Jan 2026</td><td class="above">57.9%</td><td class="below">42.1%</td><td class="above">60.9%</td><td class="below">39.1%</td></tr>
+<tr><td class="date">05 Jan 2026</td><td class="above">62.1%</td><td class="below">37.9%</td><td class="above">63.7%</td><td class="below">36.3%</td></tr>
+<tr><td class="date">06 Jan 2026</td><td class="above">72.1%</td><td class="below">27.9%</td><td class="above">68.5%</td><td class="below">31.5%</td></tr>
+<tr><td class="date">07 Jan 2026</td><td class="above">57.3%</td><td class="below">42.7%</td><td class="above">63.4%</td><td class="below">36.6%</td></tr>
+<tr><td class="date">08 Jan 2026</td><td class="above">68.9%</td><td class="below">31.1%</td><td class="above">71.2%</td><td class="below">28.8%</td></tr>
+<tr><td class="date">09 Jan 2026</td><td class="above">69.5%</td><td class="below">30.5%</td><td class="above">72.2%</td><td class="below">27.8%</td></tr>
+<tr><td class="date">12 Jan 2026</td><td class="above">66.9%</td><td class="below">33.1%</td><td class="above">71.4%</td><td class="below">28.6%</td></tr>
+<tr><td class="date">13 Jan 2026</td><td class="above">65.5%</td><td class="below">34.5%</td><td class="above">68.6%</td><td class="below">31.4%</td></tr>
+<tr><td class="date">14 Jan 2026</td><td class="above">68.1%</td><td class="below">31.9%</td><td class="above">72.8%</td><td class="below">27.2%</td></tr>
+<tr><td class="date">15 Jan 2026</td><td class="above">70.1%</td><td class="below">29.9%</td><td class="above">73.6%</td><td class="below">26.4%</td></tr>
+<tr><td class="date">16 Jan 2026</td><td class="above">66.7%</td><td class="below">33.3%</td><td class="above">72.8%</td><td class="below">27.2%</td></tr>
+<tr><td class="date">20 Jan 2026</td><td class="above">53.7%</td><td class="below">46.3%</td><td class="above">64.4%</td><td class="below">35.6%</td></tr>
+<tr><td class="date">21 Jan 2026</td><td class="above">62.1%</td><td class="below">37.9%</td><td class="above">70.2%</td><td class="below">29.8%</td></tr>
+<tr><td class="date">22 Jan 2026</td><td class="above">62.3%</td><td class="below">37.7%</td><td class="above">69.6%</td><td class="below">30.4%</td></tr>
+<tr><td class="date">23 Jan 2026</td><td class="above">57.7%</td><td class="below">42.3%</td><td class="above">67.6%</td><td class="below">32.4%</td></tr>
+<tr><td class="date">26 Jan 2026</td><td class="above">60.3%</td><td class="below">39.7%</td><td class="above">70.2%</td><td class="below">29.8%</td></tr>
+<tr><td class="date">27 Jan 2026</td><td class="above">57.9%</td><td class="below">42.1%</td><td class="above">67.1%</td><td class="below">32.9%</td></tr>
+<tr><td class="date">28 Jan 2026</td><td class="above">51.9%</td><td class="below">48.1%</td><td class="above">62.5%</td><td class="below">37.5%</td></tr>
+<tr><td class="date">29 Jan 2026</td><td class="above">54.7%</td><td class="below">45.3%</td><td class="above">64.5%</td><td class="below">35.5%</td></tr>
+<tr><td class="date">30 Jan 2026</td><td class="above">54.1%</td><td class="below">45.9%</td><td class="above">67.1%</td><td class="below">32.9%</td></tr>
+<tr><td class="date">02 Feb 2026</td><td class="above">56.3%</td><td class="below">43.7%</td><td class="above">66.9%</td><td class="below">33.1%</td></tr>
+<tr><td class="date">03 Feb 2026</td><td class="above">56.3%</td><td class="below">43.7%</td><td class="above">63.3%</td><td class="below">36.7%</td></tr>
+<tr><td class="date">04 Feb 2026</td><td class="above">62.1%</td><td class="below">37.9%</td><td class="above">67.9%</td><td class="below">32.1%</td></tr>
+<tr><td class="date">05 Feb 2026</td><td class="above">57.9%</td><td class="below">42.1%</td><td class="above">65.1%</td><td class="below">34.9%</td></tr>
+<tr><td class="date">06 Feb 2026</td><td class="above">67.1%</td><td class="below">32.9%</td><td class="above">68.9%</td><td class="below">31.1%</td></tr>
+<tr><td class="date">09 Feb 2026</td><td class="above">64.9%</td><td class="below">35.1%</td><td class="above">68.1%</td><td class="below">31.9%</td></tr>
+<tr><td class="date">10 Feb 2026</td><td class="above">67.3%</td><td class="below">32.7%</td><td class="above">68.5%</td><td class="below">31.5%</td></tr>
+<tr><td class="date">11 Feb 2026</td><td class="above">67.3%</td><td class="below">32.7%</td><td class="above">67.1%</td><td class="below">32.9%</td></tr>
+<tr><td class="date">12 Feb 2026</td><td class="above">58.1%</td><td class="below">41.9%</td><td class="above">61.7%</td><td class="below">38.3%</td></tr>
+<tr><td class="date">13 Feb 2026</td><td class="above">61.5%</td><td class="below">38.5%</td><td class="above">63.3%</td><td class="below">36.7%</td></tr>
+<tr><td class="date">17 Feb 2026</td><td class="above">61.5%</td><td class="below">38.5%</td><td class="above">64.9%</td><td class="below">35.1%</td></tr>
+<tr><td class="date">18 Feb 2026</td><td class="above">66.7%</td><td class="below">33.3%</td><td class="above">66.9%</td><td class="below">33.1%</td></tr>
+<tr><td class="date">19 Feb 2026</td><td class="above">61.7%</td><td class="below">38.3%</td><td class="above">64.3%</td><td class="below">35.7%</td></tr>
+<tr><td class="date">20 Feb 2026</td><td class="above">63.3%</td><td class="below">36.7%</td><td class="above">66.1%</td><td class="below">33.9%</td></tr>
+<tr><td class="date">23 Feb 2026</td><td class="above">56.7%</td><td class="below">43.3%</td><td class="above">61.7%</td><td class="below">38.3%</td></tr>
+<tr><td class="date">24 Feb 2026</td><td class="above">58.5%</td><td class="below">41.5%</td><td class="above">62.5%</td><td class="below">37.5%</td></tr>
+<tr><td class="date">25 Feb 2026</td><td class="above">58.5%</td><td class="below">41.5%</td><td class="above">63.1%</td><td class="below">36.9%</td></tr>
+<tr><td class="date">26 Feb 2026</td><td class="above">64.7%</td><td class="below">35.3%</td><td class="above">66.1%</td><td class="below">33.9%</td></tr>
+<tr><td class="date">27 Feb 2026</td><td class="above">61.5%</td><td class="below">38.5%</td><td class="above">63.1%</td><td class="below">36.9%</td></tr>
+<tr><td class="date">02 Mar 2026</td><td class="above">59.1%</td><td class="below">40.9%</td><td class="above">62.1%</td><td class="below">37.9%</td></tr>
+<tr><td class="date">03 Mar 2026</td><td class="above">47.5%</td><td class="below">52.5%</td><td class="above">56.9%</td><td class="below">43.1%</td></tr>
+<tr><td class="date">04 Mar 2026</td><td class="above">49.5%</td><td class="below">50.5%</td><td class="above">58.7%</td><td class="below">41.3%</td></tr>
+<tr><td class="date">05 Mar 2026</td><td class="above">41.5%</td><td class="below">58.5%</td><td class="above">52.1%</td><td class="below">47.9%</td></tr>
+<tr><td class="date">06 Mar 2026</td><td class="above">35.3%</td><td class="below">64.7%</td><td class="above">45.1%</td><td class="below">54.9%</td></tr>
+<tr><td class="date">09 Mar 2026</td><td class="above">34.5%</td><td class="below">65.5%</td><td class="above">44.7%</td><td class="below">55.3%</td></tr>
+<tr><td class="date">10 Mar 2026</td><td class="above">29.3%</td><td class="below">70.7%</td><td class="above">41.7%</td><td class="below">58.3%</td></tr>
+<tr><td class="date">11 Mar 2026</td><td class="above">27.5%</td><td class="below">72.5%</td><td class="above">39.5%</td><td class="below">60.5%</td></tr>
+<tr><td class="date">12 Mar 2026</td><td class="above">21.0%</td><td class="below">79.0%</td><td class="above">32.5%</td><td class="below">67.5%</td></tr>
+<tr><td class="date">13 Mar 2026</td><td class="above">22.6%</td><td class="below">77.5%</td><td class="above">32.7%</td><td class="below">67.3%</td></tr>
+<tr><td class="date">16 Mar 2026</td><td class="above">26.4%</td><td class="below">73.7%</td><td class="above">34.5%</td><td class="below">65.5%</td></tr>
+<tr><td class="date">17 Mar 2026</td><td class="above">28.5%</td><td class="below">71.5%</td><td class="above">35.7%</td><td class="below">64.3%</td></tr>
+<tr><td class="date">18 Mar 2026</td><td class="above">19.0%</td><td class="below">81.0%</td><td class="above">29.9%</td><td class="below">70.1%</td></tr>
+<tr><td class="date">19 Mar 2026</td><td class="above">20.0%</td><td class="below">80.0%</td><td class="above">28.7%</td><td class="below">71.3%</td></tr>
+<tr><td class="date">20 Mar 2026</td><td class="above">12.8%</td><td class="below">87.2%</td><td class="above">20.8%</td><td class="below">79.2%</td></tr>
+<tr><td class="date">23 Mar 2026</td><td class="above">17.2%</td><td class="below">82.8%</td><td class="above">24.9%</td><td class="below">75.0%</td></tr>
+<tr><td class="date">24 Mar 2026</td><td class="above">20.4%</td><td class="below">79.6%</td><td class="above">25.8%</td><td class="below">74.2%</td></tr>
+<tr><td class="date">25 Mar 2026</td><td class="above">24.6%</td><td class="below">75.5%</td><td class="above">28.1%</td><td class="below">71.9%</td></tr>
+<tr><td class="date">26 Mar 2026</td><td class="above">19.6%</td><td class="below">80.4%</td><td class="above">23.1%</td><td class="below">76.8%</td></tr>
+<tr><td class="date">27 Mar 2026</td><td class="above">14.2%</td><td class="below">85.8%</td><td class="above">20.4%</td><td class="below">79.6%</td></tr>
+<tr><td class="date">30 Mar 2026</td><td class="above">18.2%</td><td class="below">81.8%</td><td class="above">20.4%</td><td class="below">79.6%</td></tr>
+<tr><td class="date">31 Mar 2026</td><td class="above">37.1%</td><td class="below">62.9%</td><td class="above">24.9%</td><td class="below">75.0%</td></tr>
+<tr><td class="date">01 Apr 2026</td><td class="above">46.3%</td><td class="below">53.7%</td><td class="above">27.9%</td><td class="below">72.1%</td></tr>
+<tr><td class="date">02 Apr 2026</td><td class="above">53.5%</td><td class="below">46.5%</td><td class="above">30.9%</td><td class="below">69.1%</td></tr>
+<tr><td class="date">06 Apr 2026</td><td class="above">59.5%</td><td class="below">40.5%</td><td class="above">34.3%</td><td class="below">65.7%</td></tr>
+<tr><td class="date">07 Apr 2026</td><td class="above">54.7%</td><td class="below">45.3%</td><td class="above">30.9%</td><td class="below">69.1%</td></tr>
+<tr><td class="date">08 Apr 2026</td><td class="above">76.0%</td><td class="below">23.9%</td><td class="above">49.7%</td><td class="below">50.3%</td></tr>
+<tr><td class="date">09 Apr 2026</td><td class="above">74.5%</td><td class="below">25.6%</td><td class="above">50.7%</td><td class="below">49.3%</td></tr>
+<tr><td class="date">10 Apr 2026</td><td class="above">66.9%</td><td class="below">33.1%</td><td class="above">45.1%</td><td class="below">54.9%</td></tr>
+<tr><td class="date">13 Apr 2026</td><td class="above">72.5%</td><td class="below">27.5%</td><td class="above">50.9%</td><td class="below">49.1%</td></tr>
+<tr><td class="date">14 Apr 2026</td><td class="above">74.0%</td><td class="below">25.9%</td><td class="above">54.5%</td><td class="below">45.5%</td></tr>
+<tr><td class="date">15 Apr 2026</td><td class="above">73.2%</td><td class="below">26.8%</td><td class="above">52.7%</td><td class="below">47.3%</td></tr>
+<tr><td class="date">16 Apr 2026</td><td class="above">75.7%</td><td class="below">24.4%</td><td class="above">53.5%</td><td class="below">46.5%</td></tr>
+<tr><td class="date">17 Apr 2026</td><td class="above">80.4%</td><td class="below">19.6%</td><td class="above">61.5%</td><td class="below">38.5%</td></tr>
+<tr><td class="date">20 Apr 2026</td><td class="above">78.2%</td><td class="below">21.8%</td><td class="above">62.7%</td><td class="below">37.3%</td></tr>
+<tr><td class="date">21 Apr 2026</td><td class="above">69.9%</td><td class="below">30.1%</td><td class="above">58.3%</td><td class="below">41.7%</td></tr>
+<tr><td class="date">22 Apr 2026</td><td class="above">65.9%</td><td class="below">34.1%</td><td class="above">55.5%</td><td class="below">44.5%</td></tr>
+<tr><td class="date">23 Apr 2026</td><td class="above">66.3%</td><td class="below">33.7%</td><td class="above">55.9%</td><td class="below">44.1%</td></tr>
+<tr><td class="date">24 Apr 2026</td><td class="above">60.1%</td><td class="below">39.9%</td><td class="above">53.3%</td><td class="below">46.7%</td></tr>
+<tr><td class="date">27 Apr 2026</td><td class="above">56.7%</td><td class="below">43.3%</td><td class="above">52.1%</td><td class="below">47.9%</td></tr>
+<tr><td class="date">28 Apr 2026</td><td class="above">56.7%</td><td class="below">43.3%</td><td class="above">52.9%</td><td class="below">47.1%</td></tr>
+<tr><td class="date">29 Apr 2026</td><td class="above">49.1%</td><td class="below">50.9%</td><td class="above">50.3%</td><td class="below">49.7%</td></tr>
+<tr><td class="date">30 Apr 2026</td><td class="above">59.5%</td><td class="below">40.5%</td><td class="above">56.5%</td><td class="below">43.5%</td></tr>
+<tr><td class="date">01 May 2026</td><td class="above">56.7%</td><td class="below">43.3%</td><td class="above">55.5%</td><td class="below">44.5%</td></tr>
+<tr><td class="date">04 May 2026</td><td class="above">46.1%</td><td class="below">53.9%</td><td class="above">52.3%</td><td class="below">47.7%</td></tr>
+<tr><td class="date">05 May 2026</td><td class="above">48.7%</td><td class="below">51.3%</td><td class="above">53.9%</td><td class="below">46.1%</td></tr>
+<tr><td class="date">06 May 2026</td><td class="above">52.7%</td><td class="below">47.3%</td><td class="above">56.5%</td><td class="below">43.5%</td></tr>
+<tr><td class="date">07 May 2026</td><td class="above">45.1%</td><td class="below">54.9%</td><td class="above">54.1%</td><td class="below">45.9%</td></tr>
+<tr><td class="date">08 May 2026</td><td class="above">42.9%</td><td class="below">57.1%</td><td class="above">52.7%</td><td class="below">47.3%</td></tr>
+<tr><td class="date">11 May 2026</td><td class="above">42.9%</td><td class="below">57.1%</td><td class="above">50.7%</td><td class="below">49.3%</td></tr>
+<tr><td class="date">12 May 2026</td><td class="above">44.9%</td><td class="below">55.1%</td><td class="above">51.9%</td><td class="below">48.1%</td></tr>
+<tr><td class="date">13 May 2026</td><td class="above">42.3%</td><td class="below">57.7%</td><td class="above">46.7%</td><td class="below">53.3%</td></tr>
+<tr><td class="date">14 May 2026</td><td class="above">41.9%</td><td class="below">58.1%</td><td class="above">47.7%</td><td class="below">52.3%</td></tr>
+<tr><td class="date">15 May 2026</td><td class="above">36.1%</td><td class="below">63.9%</td><td class="above">45.5%</td><td class="below">54.5%</td></tr>
+<tr><td class="date">18 May 2026</td><td class="above">45.1%</td><td class="below">54.9%</td><td class="above">52.1%</td><td class="below">47.9%</td></tr>
+<tr><td class="date">19 May 2026</td><td class="above">40.5%</td><td class="below">59.5%</td><td class="above">48.1%</td><td class="below">51.9%</td></tr>
+<tr><td class="date">20 May 2026</td><td class="above">48.7%</td><td class="below">51.3%</td><td class="above">54.1%</td><td class="below">45.9%</td></tr>
+<tr><td class="date">21 May 2026</td><td class="above">52.9%</td><td class="below">47.1%</td><td class="above">55.7%</td><td class="below">44.3%</td></tr>
+<tr><td class="date">22 May 2026</td><td class="above">60.1%</td><td class="below">39.9%</td><td class="above">58.7%</td><td class="below">41.3%</td></tr>
+<tr><td class="date">26 May 2026</td><td class="above">61.7%</td><td class="below">38.3%</td><td class="above">57.1%</td><td class="below">42.9%</td></tr>
+<tr><td class="date">27 May 2026</td><td class="above">56.7%</td><td class="below">43.3%</td><td class="above">56.7%</td><td class="below">43.3%</td></tr>
+<tr><td class="date">28 May 2026</td><td class="above">55.7%</td><td class="below">44.3%</td><td class="above">57.3%</td><td class="below">42.7%</td></tr>
+<tr><td class="date">29 May 2026</td><td class="above">50.7%</td><td class="below">49.3%</td><td class="above">55.1%</td><td class="below">44.9%</td></tr>
+<tr><td class="date">01 Jun 2026</td><td class="above">47.9%</td><td class="below">52.1%</td><td class="above">53.3%</td><td class="below">46.7%</td></tr>
+<tr><td class="date">02 Jun 2026</td><td class="above">52.5%</td><td class="below">47.5%</td><td class="above">53.1%</td><td class="below">46.9%</td></tr>
+<tr><td class="date">03 Jun 2026</td><td class="above">50.5%</td><td class="below">49.5%</td><td class="above">50.9%</td><td class="below">49.1%</td></tr>
+<tr><td class="date">04 Jun 2026</td><td class="above">62.3%</td><td class="below">37.7%</td><td class="above">56.5%</td><td class="below">43.5%</td></tr>
+<tr><td class="date">05 Jun 2026</td><td class="above">61.5%</td><td class="below">38.5%</td><td class="above">55.3%</td><td class="below">44.7%</td></tr>
+<tr><td class="date">08 Jun 2026</td><td class="above">55.5%</td><td class="below">44.5%</td><td class="above">53.3%</td><td class="below">46.7%</td></tr>
+<tr><td class="date">09 Jun 2026</td><td class="above">64.9%</td><td class="below">35.1%</td><td class="above">58.9%</td><td class="below">41.1%</td></tr>
+<tr><td class="date">10 Jun 2026</td><td class="above">56.5%</td><td class="below">43.5%</td><td class="above">51.9%</td><td class="below">48.1%</td></tr>
+<tr><td class="date">11 Jun 2026</td><td class="above">64.5%</td><td class="below">35.5%</td><td class="above">57.1%</td><td class="below">42.9%</td></tr>
+<tr><td class="date">12 Jun 2026</td><td class="above">71.3%</td><td class="below">28.7%</td><td class="above">61.5%</td><td class="below">38.5%</td></tr>
+<tr><td class="date">15 Jun 2026</td><td class="above">70.1%</td><td class="below">29.9%</td><td class="above">64.3%</td><td class="below">35.7%</td></tr>
+<tr><td class="date">16 Jun 2026</td><td class="above">68.3%</td><td class="below">31.7%</td><td class="above">66.1%</td><td class="below">33.9%</td></tr>
+<tr><td class="date">17 Jun 2026</td><td class="above">51.9%</td><td class="below">48.1%</td><td class="above">55.1%</td><td class="below">44.9%</td></tr>
+<tr><td class="date">18 Jun 2026</td><td class="above">51.1%</td><td class="below">48.9%</td><td class="above">56.3%</td><td class="below">43.7%</td></tr>
+<tr><td class="date">22 Jun 2026</td><td class="above">52.1%</td><td class="below">47.9%</td><td class="above">55.7%</td><td class="below">44.3%</td></tr>
+<tr><td class="date">23 Jun 2026</td><td class="above">54.3%</td><td class="below">45.7%</td><td class="above">60.1%</td><td class="below">39.9%</td></tr>
+<tr><td class="date">24 Jun 2026</td><td class="above">59.8%</td><td class="below">40.2%</td><td class="above">64.1%</td><td class="below">35.9%</td></tr>
+<tr><td class="date">25 Jun 2026</td><td class="above">61.0%</td><td class="below">39.0%</td><td class="above">63.7%</td><td class="below">36.3%</td></tr>
+<tr><td class="date">26 Jun 2026</td><td class="above">63.0%</td><td class="below">37.0%</td><td class="above">64.3%</td><td class="below">35.7%</td></tr>
+<tr><td class="date">29 Jun 2026</td><td class="above">65.1%</td><td class="below">34.9%</td><td class="above">64.9%</td><td class="below">35.1%</td></tr>
+<tr><td class="date">30 Jun 2026</td><td class="above">63.0%</td><td class="below">37.0%</td><td class="above">62.5%</td><td class="below">37.5%</td></tr>
+<tr><td class="date">01 Jul 2026</td><td class="above">64.3%</td><td class="below">35.7%</td><td class="above">63.9%</td><td class="below">36.1%</td></tr>
+<tr><td class="date">02 Jul 2026</td><td class="above">68.1%</td><td class="below">31.9%</td><td class="above">67.5%</td><td class="below">32.5%</td></tr>
+<tr><td class="date">06 Jul 2026</td><td class="above">67.9%</td><td class="below">32.1%</td><td class="above">68.9%</td><td class="below">31.1%</td></tr>
+<tr><td class="date">07 Jul 2026</td><td class="above">66.9%</td><td class="below">33.1%</td><td class="above">67.9%</td><td class="below">32.1%</td></tr>
+<tr><td class="date">08 Jul 2026</td><td class="above">57.8%</td><td class="below">42.2%</td><td class="above">64.3%</td><td class="below">35.7%</td></tr>
+<tr><td class="date">09 Jul 2026</td><td class="above">59.4%</td><td class="below">40.6%</td><td class="above">65.1%</td><td class="below">34.9%</td></tr>
+<tr><td class="date">10 Jul 2026</td><td class="above">62.5%</td><td class="below">37.5%</td><td class="above">68.5%</td><td class="below">31.5%</td></tr>
+<tr><td class="date">13 Jul 2026</td><td class="above">63.0%</td><td class="below">37.0%</td><td class="above">66.1%</td><td class="below">33.9%</td></tr>
+<tr><td class="date">14 Jul 2026</td><td class="above">57.6%</td><td class="below">42.4%</td><td class="above">63.7%</td><td class="below">36.3%</td></tr>
+<tr><td class="date">15 Jul 2026</td><td class="above">52.7%</td><td class="below">47.3%</td><td class="above">62.3%</td><td class="below">37.7%</td></tr>
+<tr><td class="date">16 Jul 2026</td><td class="above">64.8%</td><td class="below">35.2%</td><td class="above">67.7%</td><td class="below">32.3%</td></tr>
+<tr><td class="date">17 Jul 2026</td><td class="above">58.5%</td><td class="below">41.5%</td><td class="above">64.5%</td><td class="below">35.5%</td></tr>
+<tr><td class="date">20 Jul 2026</td><td class="above">52.9%</td><td class="below">47.1%</td><td class="above">62.3%</td><td class="below">37.7%</td></tr>
+<tr><td class="date">21 Jul 2026</td><td class="above">50.1%</td><td class="below">49.9%</td><td class="above">60.1%</td><td class="below">39.9%</td></tr>
+<tr><td class="date">22 Jul 2026</td><td class="above">46.1%</td><td class="below">53.9%</td><td class="above">63.3%</td><td class="below">36.7%</td></tr>
+<tr><td class="date">23 Jul 2026</td><td class="above">43.9%</td><td class="below">56.1%</td><td class="above">59.7%</td><td class="below">40.3%</td></tr>
+</tbody></table></div>
+<footer>Adjusted closes from Yahoo Finance; members read from Wikipedia's
+current S&amp;P 500 list. A member counts only once it has a full moving
+average, so the last session weighed 503 on the 20-day, 501 on the 50-day. Above and below are both
+strict, which leaves a stock sitting exactly on its average in neither column —
+that is why a row can fall a shade short of 100%. Generated
+26 Jul 2026.</footer>
+</div>
+</body>
+</html>

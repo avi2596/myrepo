@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>S&P 500 market breadth</title>
+<style>
+  :root {
+    color-scheme: light;
+    --page: #f9f9f7; --surface: #fcfcfb; --ink: #0b0b0b; --ink-2: #52514e;
+    --ink-3: #898781; --rule: #e1e0d9; --chip: #eeede8;
+    --above: #1f5fbf; --below: #c0392b;
+    --shadow: 0 1px 2px rgba(11,11,11,.06), 0 8px 24px rgba(11,11,11,.07);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:where(:not([data-theme="light"])) {
+      color-scheme: dark;
+      --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+      --ink-3: #898781; --rule: #2c2c2a; --chip: #2c2c2a;
+      --above: #7aa9f0; --below: #ef7d6d;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
+    }
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --page: #0d0d0d; --surface: #1a1a19; --ink: #ffffff; --ink-2: #c3c2b7;
+    --ink-3: #898781; --rule: #2c2c2a; --chip: #2c2c2a;
+    --above: #7aa9f0; --below: #ef7d6d;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--page); }
+  body {
+    padding: 34px 22px 56px; color: var(--ink);
+    font: 15px/1.55 system-ui, -apple-system, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .inner { max-width: 900px; margin: 0 auto; }
+  h1 { margin: 0 0 6px; font-size: 26px; letter-spacing: -.015em; }
+  .sub { margin: 0 0 22px; color: var(--ink-2); font-size: 13.5px; }
+  .years { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 26px; }
+  .years a, .years span {
+    padding: 4px 11px; border-radius: 999px; font-size: 13px;
+    text-decoration: none; background: var(--chip); color: var(--ink-2);
+    border: 1px solid transparent;
+  }
+  .years a:hover { color: var(--ink); border-color: var(--rule); }
+  .years .here { background: var(--ink); color: var(--page); font-weight: 600; }
+
+  figure {
+    margin: 0 0 22px; padding: 14px; border-radius: 12px;
+    background: var(--surface); border: 1px solid var(--rule);
+    box-shadow: var(--shadow);
+  }
+  figure img { display: block; width: 100%; height: auto; border-radius: 6px; }
+
+  .scroll {
+    max-height: 620px; overflow: auto; border: 1px solid var(--rule);
+    border-radius: 12px; background: var(--surface); box-shadow: var(--shadow);
+  }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; }
+  th, td { padding: 7px 14px; text-align: right; white-space: nowrap; }
+  th {
+    position: sticky; top: 0; z-index: 1; background: var(--surface);
+    font-size: 11.5px; letter-spacing: .04em; text-transform: uppercase;
+    color: var(--ink-3); font-weight: 600; box-shadow: inset 0 -1px var(--rule);
+  }
+  td { border-top: 1px solid var(--rule); font-size: 13.5px; }
+  tbody tr:first-child td { border-top: 0; }
+  th:first-child, td:first-child { text-align: left; }
+  td.date { color: var(--ink-2); }
+  td.above { color: var(--above); }
+  td.below { color: var(--below); }
+  tbody tr:hover td { background: var(--chip); }
+
+  footer { margin: 24px 0 0; color: var(--ink-3); font-size: 12.5px; }
+  footer a { color: var(--ink-2); }
+</style>
+</head>
+<body>
+<div class="inner">
+<h1>S&amp;P 500 market breadth</h1>
+<p class="sub">How much of the index is above its own moving average, a year at
+a time. Each year keeps its own table and charts.</p>
+<nav class="years"><span class="here">All years</span><a href="breadth_2025.html">2025</a><a href="breadth_2026.html">2026</a></nav>
+<div class="scroll"><table><thead><tr><th>Year</th><th>Sessions</th>
+<th>Status</th><th>Last above 20-day</th><th>Last above 50-day</th></tr></thead>
+<tbody>
+<tr><td class="date"><a href="breadth_2026.html">2026</a></td><td>139 sessions</td><td>through 23 Jul</td><td class="above">43.9%</td><td class="above">59.7%</td></tr>
+<tr><td class="date"><a href="breadth_2025.html">2025</a></td><td>250 sessions</td><td>complete</td><td class="above">43.1%</td><td class="above">57.5%</td></tr>
+</tbody></table></div>
+<footer>Generated 26 Jul 2026.</footer>
+</div>
+</body>
+</html>
