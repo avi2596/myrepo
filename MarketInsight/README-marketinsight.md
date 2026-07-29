@@ -10,7 +10,7 @@ python market_insight.py                 # build today's brief
 python market_insight.py --days 60       # widen the recency window (default 45)
 python market_insight.py --per-theme 6   # more notes per subject (default 4)
 python market_insight.py --no-cache      # ignore cached pages
-python market_insight.py --render-only   # rebuild the archive index only
+python market_insight.py --render-only   # rebuild every page from stored data
 ```
 
 Requires Python 3.12+ and `pip install -r requirements-marketinsight.txt`.
@@ -18,12 +18,18 @@ Requires Python 3.12+ and `pip install -r requirements-marketinsight.txt`.
 ## What it produces
 
 ```
-index.html                     the archive — one link per edition, newest first
-reports/2026-07-29/
-    index.html                 the brief for that date, charts inlined
-    report.json                the same thing as data
-    assets/                    each chart as a file, if you want to reuse one
+index.html                          the archive — one link per edition, newest first
+reports/2026/2026-07-29/
+    index.html                      the brief for that date, charts inlined
+    artifact.html                   the same page without the outer document
+    report.json                     the same thing as data
+    assets/                         each chart as a file, if you want to reuse one
 ```
+
+Editions are filed under their year. Both the folder and the page's own **Log**
+group by year, so a few hundred editions stay navigable rather than becoming one
+long list. Editions written before the year folders existed are moved into place
+automatically on the next run.
 
 Every run writes today's folder and leaves earlier days untouched, so the folder
 becomes an archive. Older editions get their date rail rewritten so they can
@@ -113,6 +119,10 @@ outlook is not printed six times. The other subjects it covers are listed as
 tags on the card.
 
 ## Getting around the page
+
+The **Log** in the left rail lists every edition, newest first, grouped under
+its year, with the one you are reading marked. It is how you get back to any
+previous date.
 
 The six counters across the top are the table of contents: each one jumps to
 its section. They are plain fragment links, so the jump is instant and works

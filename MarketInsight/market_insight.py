@@ -14,9 +14,10 @@ it out as a dated brief with the charts lifted from the source.
     python market_insight.py --no-cache       # ignore the page cache
     python market_insight.py --render-only    # re-render from what's on disk
 
-Each run writes reports/<date>/index.html and leaves earlier days alone, so the
-folder becomes an archive and the top-level index gains a link per date. Rerun
-it on the same day and the day's report is rebuilt in place.
+Each run writes reports/<year>/<date>/ and leaves earlier editions alone, so the
+folder becomes a log and the top-level index gains a link per date. Rerun it on
+the same day and that day's edition is rebuilt in place. Filing by year keeps
+both the folder and the page's own Log navigable once the editions pile up.
 
 Discovery goes through each site's sitemap rather than the homepage, because
 the homepages render their cards in the browser and arrive empty. The sitemaps
@@ -49,6 +50,7 @@ import re
 import sys
 import time
 from dataclasses import dataclass, field
+from itertools import groupby
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from urllib.parse import urljoin, urlparse
@@ -895,6 +897,9 @@ a.tile:hover .l{color:var(--ink-2)}
 .rail h2{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
          color:var(--ink-3);margin:0 0 12px;font-weight:600}
 .rail nav{display:flex;flex-direction:column;gap:2px;margin-bottom:30px}
+.rail nav .year{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--accent);
+                margin:14px 0 4px;font-weight:600}
+.rail nav .year:first-child{margin-top:0}
 .rail nav a{font-family:var(--mono);font-size:12.5px;text-decoration:none;color:var(--ink-2);
             padding:7px 10px;border-left:2px solid var(--rule);border-radius:0 3px 3px 0}
 .rail nav a:hover{background:var(--rule-2);color:var(--ink)}
@@ -985,11 +990,7 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
     long_day = day.strftime("%d %B %Y").lstrip("0")
 
     shown = dates if standalone else [day.isoformat()]
-    rail = "".join(
-        f'<a href="{f"../{d}/index.html" if standalone else "#brief"}"'
-        f'{" aria-current=\"page\"" if d == day.isoformat() else ""}>'
-        f'{esc(date.fromisoformat(d).strftime("%d %b %Y").lstrip("0"))}</a>'
-        for d in shown)
+    rail = rail_markup(day.isoformat(), shown, standalone)
 
     sections, landed = [], set()
     for theme in THEME_ORDER:
@@ -1105,7 +1106,7 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
 
 <div class="layout">
   <aside class="rail">
-    <h2>Editions</h2>
+    <h2>Log</h2>
     <nav>{rail}</nav>
   </aside>
   <main id="brief">
@@ -1127,12 +1128,14 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
 
 def render_index(dates: list[str], latest: dict) -> str:
     rows = []
-    for d in dates:
-        info = latest.get(d, {})
-        rows.append(
-            f'<li><a href="reports/{d}/index.html">'
-            f'<time datetime="{d}">{esc(date.fromisoformat(d).strftime("%d %B %Y").lstrip("0"))}</time>'
-            f'<span>{info.get("articles", 0)} notes · {info.get("charts", 0)} charts</span></a></li>')
+    for year, group in groupby(dates, key=lambda d: d[:4]):
+        rows.append(f'<li class="yr"><h2>{esc(year)}</h2></li>')
+        for d in group:
+            info = latest.get(d, {})
+            rows.append(
+                f'<li><a href="reports/{d[:4]}/{d}/index.html">'
+                f'<time datetime="{d}">{esc(date.fromisoformat(d).strftime("%d %B %Y").lstrip("0"))}</time>'
+                f'<span>{info.get("articles", 0)} notes · {info.get("charts", 0)} charts</span></a></li>')
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1148,6 +1151,10 @@ def render_index(dates: list[str], latest: dict) -> str:
 .arch a:hover{{background:var(--rule-2)}}
 .arch time{{font-family:var(--serif);font-size:19px}}
 .arch span{{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}}
+.arch li.yr{{border:0;padding:26px 0 4px}}
+.arch li.yr:first-child{{padding-top:0}}
+.arch li.yr h2{{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--accent);
+                margin:0;font-weight:600}}
 </style>
 </head>
 <body>
@@ -1167,9 +1174,59 @@ def render_index(dates: list[str], latest: dict) -> str:
 
 # --------------------------------------------------------------------- main
 
+def edition_dir(day: str) -> Path:
+    """Where one edition lives: reports/<year>/<date>/."""
+    return REPORTS / day[:4] / day
+
+
 def edition_dates() -> list[str]:
-    return sorted((p.name for p in REPORTS.iterdir()
-                   if p.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.name)), reverse=True)
+    """Every edition on disk, newest first."""
+    out = []
+    for year in REPORTS.iterdir():
+        if year.is_dir() and re.fullmatch(r"\d{4}", year.name):
+            out += [p.name for p in year.iterdir()
+                    if p.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.name)]
+    return sorted(out, reverse=True)
+
+
+def migrate_flat_editions() -> int:
+    """Move editions written before the year folders existed.
+
+    The first version put every edition straight under reports/. Filing them
+    by year keeps the folder navigable once there are a few hundred, and the
+    move is done here rather than by hand so an old checkout upgrades itself.
+    """
+    moved = 0
+    for path in sorted(REPORTS.iterdir()):
+        if not (path.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", path.name)):
+            continue
+        target = edition_dir(path.name)
+        if target.exists():
+            continue
+        target.parent.mkdir(parents=True, exist_ok=True)
+        path.rename(target)
+        moved += 1
+    return moved
+
+
+def rail_href(current: str, target: str) -> str:
+    """A link from one edition to another, across year folders when needed."""
+    if current[:4] == target[:4]:
+        return f"../{target}/index.html"
+    return f"../../{target[:4]}/{target}/index.html"
+
+
+def rail_markup(current: str, dates: list[str], standalone: bool = True) -> str:
+    """The Log: every edition, filed under its year, newest first."""
+    parts = []
+    for year, group in groupby(dates, key=lambda d: d[:4]):
+        parts.append(f'<h3 class="year">{esc(year)}</h3>')
+        for d in group:
+            href = rail_href(current, d) if standalone else "#brief"
+            here = ' aria-current="page"' if d == current else ""
+            label = date.fromisoformat(d).strftime("%d %b").lstrip("0")
+            parts.append(f'<a href="{href}"{here}>{esc(label)}</a>')
+    return "".join(parts)
 
 
 def load_edition(day: str) -> tuple[list[Article], list[dict], str] | None:
@@ -1181,7 +1238,7 @@ def load_edition(day: str) -> tuple[list[Article], list[dict], str] | None:
     at any time, which is what lets them stay out of version control instead of
     committing several megabytes of inlined base64 a day.
     """
-    folder = REPORTS / day
+    folder = edition_dir(day)
     data = folder / "report.json"
     if not data.exists():
         return None
@@ -1217,7 +1274,7 @@ def load_edition(day: str) -> tuple[list[Article], list[dict], str] | None:
 def write_pages(day: date, articles: list[Article], daily: list[dict],
                 dates: list[str], built: str = "") -> Path:
     """The two rendered forms of one edition."""
-    folder = REPORTS / day.isoformat()
+    folder = edition_dir(day.isoformat())
     folder.mkdir(parents=True, exist_ok=True)
     page = folder / "index.html"
     page.write_text(render_report(day, articles, daily, dates, built=built), encoding="utf-8")
@@ -1232,7 +1289,7 @@ def write_pages(day: date, articles: list[Article], daily: list[dict],
 def write_archive(dates: list[str]) -> None:
     summary = {}
     for d in dates:
-        data = REPORTS / d / "report.json"
+        data = edition_dir(d) / "report.json"
         if data.exists():
             blob = json.loads(data.read_text(encoding="utf-8"))
             summary[d] = {"articles": len(blob["articles"]),
@@ -1241,7 +1298,7 @@ def write_archive(dates: list[str]) -> None:
 
 
 def write_report(day: date, articles: list[Article], daily: list[dict]) -> Path:
-    folder = REPORTS / day.isoformat()
+    folder = edition_dir(day.isoformat())
     assets = folder / "assets"
     assets.mkdir(parents=True, exist_ok=True)
 
@@ -1279,7 +1336,7 @@ def write_report(day: date, articles: list[Article], daily: list[dict]) -> Path:
     for d in dates:
         if d == day.isoformat():
             continue
-        old = REPORTS / d / "index.html"
+        old = edition_dir(d) / "index.html"
         if old.exists():
             refresh_rail(old, dates, d)
         else:
@@ -1293,9 +1350,7 @@ def write_report(day: date, articles: list[Article], daily: list[dict]) -> Path:
 def refresh_rail(page: Path, dates: list[str], current: str) -> None:
     """Rewrite an older edition's date rail so the archive stays navigable."""
     html = page.read_text(encoding="utf-8")
-    rail = "".join(
-        f'<a href="../{d}/index.html"{" aria-current=\"page\"" if d == current else ""}>'
-        f'{date.fromisoformat(d).strftime("%d %b %Y").lstrip("0")}</a>' for d in dates)
+    rail = rail_markup(current, dates)
     updated = re.sub(r"(<nav>).*?(</nav>)", lambda m: m.group(1) + rail + m.group(2),
                      html, count=1, flags=re.S)
     if updated != html:
@@ -1316,6 +1371,9 @@ def main() -> int:
     args = ap.parse_args()
 
     REPORTS.mkdir(exist_ok=True)
+    moved = migrate_flat_editions()
+    if moved and not args.quiet:
+        print(f"filed {moved} earlier edition(s) under their year", file=sys.stderr)
     today = date.today()
 
     if args.render_only:

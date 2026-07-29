@@ -10,5 +10,5 @@
 #     python market_insight.py --render-only
 #
 # It reproduces them byte for byte, build timestamp included.
-reports/*/index.html
-reports/*/artifact.html
+reports/*/*/index.html
+reports/*/*/artifact.html
