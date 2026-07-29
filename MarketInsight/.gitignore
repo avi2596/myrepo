@@ -1,1 +1,14 @@
+# Downloaded pages and PDFs, re-fetched on demand.
 .cache/
+
+# The rendered editions. Each one inlines every chart as base64 twice over —
+# once in the standalone page, once in the artifact copy — which is roughly 5MB
+# a day of duplication. What an edition is actually made of is kept: report.json
+# holds the words and assets/ holds the figures as they came from the source.
+# Rebuild the pages from those at any time with:
+#
+#     python market_insight.py --render-only
+#
+# It reproduces them byte for byte, build timestamp included.
+reports/*/index.html
+reports/*/artifact.html

@@ -973,7 +973,7 @@ def split_caption(caption: str) -> tuple[str, str]:
 
 
 def render_report(day: date, articles: list[Article], daily: list[dict], dates: list[str],
-                  standalone: bool = True) -> str:
+                  standalone: bool = True, built: str = "") -> str:
     """The brief itself.
 
     With standalone off the same page comes back without its outer document
@@ -1097,7 +1097,7 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
     <span>{len(articles)} notes</span>
     <span>{charts} charts from source</span>
     <span>{len(daily)} daily items</span>
-    <span>Built {esc(datetime.now().strftime("%H:%M"))}</span>
+    <span>Built {esc(built or datetime.now().strftime("%H:%M"))}</span>
   </div>
 </header>
 
@@ -1167,6 +1167,79 @@ def render_index(dates: list[str], latest: dict) -> str:
 
 # --------------------------------------------------------------------- main
 
+def edition_dates() -> list[str]:
+    return sorted((p.name for p in REPORTS.iterdir()
+                   if p.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.name)), reverse=True)
+
+
+def load_edition(day: str) -> tuple[list[Article], list[dict], str] | None:
+    """Rebuild an edition from what was stored for it.
+
+    report.json holds the words and assets/ holds the figures, which together
+    are everything the page is made of. The two rendered HTML files are
+    therefore derived and need not be kept — they can be regenerated from here
+    at any time, which is what lets them stay out of version control instead of
+    committing several megabytes of inlined base64 a day.
+    """
+    folder = REPORTS / day
+    data = folder / "report.json"
+    if not data.exists():
+        return None
+    blob = json.loads(data.read_text(encoding="utf-8"))
+
+    articles = []
+    for record in blob["articles"]:
+        charts = []
+        for chart in record.get("charts", []):
+            path = folder / "assets" / chart["file"]
+            if not path.exists():
+                continue
+            mime = "image/svg+xml" if path.suffix.lower() == ".svg" else "image/png"
+            charts.append(Chart(caption=chart["caption"], mime=mime, data=path.read_bytes()))
+        articles.append(Article(
+            url=record["url"], source=record["source"], section=record["section"],
+            title=record["title"], dek=record["dek"],
+            published=date.fromisoformat(record["published"]),
+            points=record.get("points", []), themes=record.get("themes", []),
+            score=record.get("score", 0), charts=charts, pdf_url=record.get("pdf", "")))
+
+    # When the edition was built, not when its HTML was last written — so a
+    # page regenerated months later still reports the run that gathered it,
+    # and regenerating produces the same bytes.
+    built = ""
+    try:
+        built = datetime.fromisoformat(blob["built"]).strftime("%H:%M")
+    except (KeyError, ValueError):
+        pass
+    return articles, blob.get("daily_insights", []), built
+
+
+def write_pages(day: date, articles: list[Article], daily: list[dict],
+                dates: list[str], built: str = "") -> Path:
+    """The two rendered forms of one edition."""
+    folder = REPORTS / day.isoformat()
+    folder.mkdir(parents=True, exist_ok=True)
+    page = folder / "index.html"
+    page.write_text(render_report(day, articles, daily, dates, built=built), encoding="utf-8")
+    # The same edition without the outer document, for publishing somewhere
+    # that wraps the content in its own.
+    (folder / "artifact.html").write_text(
+        render_report(day, articles, daily, dates, standalone=False, built=built),
+        encoding="utf-8")
+    return page
+
+
+def write_archive(dates: list[str]) -> None:
+    summary = {}
+    for d in dates:
+        data = REPORTS / d / "report.json"
+        if data.exists():
+            blob = json.loads(data.read_text(encoding="utf-8"))
+            summary[d] = {"articles": len(blob["articles"]),
+                          "charts": sum(len(a["charts"]) for a in blob["articles"])}
+    (HERE / "index.html").write_text(render_index(dates, summary), encoding="utf-8")
+
+
 def write_report(day: date, articles: list[Article], daily: list[dict]) -> Path:
     folder = REPORTS / day.isoformat()
     assets = folder / "assets"
@@ -1191,36 +1264,29 @@ def write_report(day: date, articles: list[Article], daily: list[dict]) -> Path:
                        for n, c in zip(names, art.charts)],
         })
 
+    now = datetime.now()
     (folder / "report.json").write_text(json.dumps(
-        {"date": day.isoformat(), "built": datetime.now().isoformat(timespec="seconds"),
+        {"date": day.isoformat(), "built": now.isoformat(timespec="seconds"),
          "articles": payload, "daily_insights": daily}, indent=2), encoding="utf-8")
 
-    dates = sorted((p.name for p in REPORTS.iterdir()
-                    if p.is_dir() and re.fullmatch(r"\d{4}-\d{2}-\d{2}", p.name)), reverse=True)
-    page = folder / "index.html"
-    page.write_text(render_report(day, articles, daily, dates), encoding="utf-8")
-    # The same edition without the outer document, for publishing somewhere
-    # that wraps the content in its own.
-    (folder / "artifact.html").write_text(
-        render_report(day, articles, daily, dates, standalone=False), encoding="utf-8")
+    dates = edition_dates()
+    page = write_pages(day, articles, daily, dates, built=now.strftime("%H:%M"))
+    write_archive(dates)
 
-    summary = {}
-    for d in dates:
-        data = REPORTS / d / "report.json"
-        if data.exists():
-            blob = json.loads(data.read_text(encoding="utf-8"))
-            summary[d] = {"articles": len(blob["articles"]),
-                          "charts": sum(len(a["charts"]) for a in blob["articles"])}
-    (HERE / "index.html").write_text(render_index(dates, summary), encoding="utf-8")
-
-    # Earlier editions gain a link to this one without being rebuilt.
+    # Earlier editions gain a link to this one. Where the rendered page is
+    # still on disk its rail is patched in place; where it has been cleaned
+    # away it is simply rebuilt from that day's stored data.
     for d in dates:
         if d == day.isoformat():
             continue
         old = REPORTS / d / "index.html"
-        data = REPORTS / d / "report.json"
-        if old.exists() and data.exists():
+        if old.exists():
             refresh_rail(old, dates, d)
+        else:
+            stored = load_edition(d)
+            if stored:
+                past, past_daily, built = stored
+                write_pages(date.fromisoformat(d), past, past_daily, dates, built=built)
     return page
 
 
@@ -1253,16 +1319,21 @@ def main() -> int:
     today = date.today()
 
     if args.render_only:
-        dates = sorted((p.name for p in REPORTS.iterdir() if p.is_dir()), reverse=True)
-        summary = {}
+        # Every page, rebuilt from the stored words and figures. This is how an
+        # edition comes back after the rendered HTML has been cleaned away, and
+        # how the whole archive is re-rendered after a change to the layout.
+        dates = edition_dates()
+        rebuilt = 0
         for d in dates:
-            data = REPORTS / d / "report.json"
-            if data.exists():
-                blob = json.loads(data.read_text(encoding="utf-8"))
-                summary[d] = {"articles": len(blob["articles"]),
-                              "charts": sum(len(a["charts"]) for a in blob["articles"])}
-        (HERE / "index.html").write_text(render_index(dates, summary), encoding="utf-8")
-        print(f"index rebuilt over {len(dates)} editions")
+            stored = load_edition(d)
+            if not stored:
+                print(f"  {d}: no report.json, skipped", file=sys.stderr)
+                continue
+            past, past_daily, built = stored
+            write_pages(date.fromisoformat(d), past, past_daily, dates, built=built)
+            rebuilt += 1
+        write_archive(dates)
+        print(f"{rebuilt} of {len(dates)} editions rebuilt, plus the archive index")
         return 0
 
     if pymupdf is None:

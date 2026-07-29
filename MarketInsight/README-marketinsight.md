@@ -30,6 +30,35 @@ becomes an archive. Older editions get their date rail rewritten so they can
 still navigate to the new one; nothing else about them changes. Run it twice in
 a day and the day's edition is rebuilt in place.
 
+## What is kept, and what is regenerated
+
+The two HTML files are **not** in version control. Each inlines every chart as
+base64, and the artifact copy inlines them a second time, so an edition weighs
+about 5MB of which almost all is duplication — committing one a day would add a
+couple of gigabytes a year.
+
+What is kept is what an edition is made of:
+
+| file | size | why it is kept |
+| --- | --- | --- |
+| `report.json` | ~25KB | the words: headlines, summaries, dates, subjects, links |
+| `assets/` | ~1MB | the figures, exactly as they came out of the source |
+
+Both HTML files are rebuilt from those two, byte for byte, by
+
+```
+python market_insight.py --render-only
+```
+
+which also re-renders the archive index and every past edition — so it is the
+command to run after changing the layout, not just after a fresh checkout. The
+build timestamp shown on a page comes from `report.json` rather than the clock,
+which is what makes a regenerated edition identical to the original and stops it
+claiming to have been built months after it was.
+
+Keeping the figures matters more than it looks: a source PDF can be revised or
+withdrawn, and once it is, a chart that was not saved cannot be recovered.
+
 ## Where the charts come from
 
 This is the part worth explaining, because the two desks publish nothing alike.
