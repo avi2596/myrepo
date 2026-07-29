@@ -1,0 +1,444 @@
+{
+  "date": "2026-07-29",
+  "built": "2026-07-29T16:32:54",
+  "articles": [
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/sme-exports.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 July 2026",
+      "title": "SME exports: Destinations, dollars and opportunities",
+      "dek": "Small and medium-sized exporters have seen a surge in foreign currency revenues.",
+      "published": "2026-07-27",
+      "themes": [
+        "usd",
+        "global"
+      ],
+      "score": 14,
+      "points": [
+        "Looking ahead, a relatively firm dollar through the end of 2026 could create headwinds for SME exporters, but a weaker dollar and improving global growth in 2027 may provide a more supportive backdrop, according to BofA Global Research."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/sme-exports.pdf",
+      "charts": [
+        {
+          "file": "01-1.png",
+          "caption": "Exhibit 1: Around a third of the value of exports was attributable to small and medium-sized enterprises (SMEs) in 2023"
+        },
+        {
+          "file": "01-2.png",
+          "caption": "Exhibit 3: Net dollar inflows have been rising due to SME transactions, according to Bank of America data"
+        },
+        {
+          "file": "01-3.png",
+          "caption": "Exhibit 6: The euro is by far the most important FX relationship"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/current-events/us-tariffs",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Current Events",
+      "title": "US Tariffs: What\u2019s the Impact?",
+      "dek": "The situation surrounding U.S. tariffs is constantly evolving. Read the latest analysis of their economic impact from J.P. Morgan Global Research.",
+      "published": "2026-07-24",
+      "themes": [
+        "us-macro",
+        "metals"
+      ],
+      "score": 21,
+      "points": [
+        "President Trump has floated tariffs on imported generic medicines in a bid to move production to the U.S. Under this proposal, which has not been finalized, generic drugs would initially not face any tariffs for two years starting from August 1, 2026, after which rates will be raised to 100% for one year (from August 2028) and to 200% thereafter.",
+        "July 20: The Trump administration announces 50% tariffs on Canadian imports",
+        "June 7: The US lowers tariffs on agricultural and industrial equipment",
+        "\u201cThe move, in theory, encourages foreign companies to use more U.S. steel and aluminum, which could drive incremental exports, while also supporting farmers, construction, logistics and manufacturers that rely on equipment currently treated as steel or aluminum derivatives,\u201d said Bill Peterson, senior analyst for Metals & Mining at J.P. Morgan."
+      ],
+      "pdf": "",
+      "charts": [
+        {
+          "file": "02-1.svg",
+          "caption": "Line chart showing the U.S. effective tariff rate will approach 20% as sectoral tariffs are imposed later this year."
+        },
+        {
+          "file": "02-2.svg",
+          "caption": "Bar chart showing the impact of tariffs and trade policy uncertainty on U.S., euro area, China and global GDP."
+        }
+      ]
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/middle-income-spending.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 July 2026",
+      "title": "Middle income, major impact",
+      "dek": "Despite higher prices, middle-income households continue to fuel growth across essential and discretionary categories.",
+      "published": "2026-07-23",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 11,
+      "points": [
+        "According to the US Census, middle-income households' share of total spending is much closer to their share of the population than lower-income households' spending share. In fact, middle-income families' spending contributed nearly a quarter of US GDP in 2024. Meanwhile, Bank of America card data suggests their spending growth has remained resilient since mid-2024.",
+        "Additionally, middle-income households generate about one-third of spending at grocery stores, restaurants, hobby shops and general merchandise retailers. Meanwhile, their spending growth has been especially strong in airlines and jewelry in Q2 2026.",
+        "And while inflation outpaced after-tax wage growth for middle-income households in June 2026, spending remains solid. Rising wages have more than offset higher gasoline costs, helping consumers continue spending on both essentials and discretionary items."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/middle-income-spending.pdf",
+      "charts": [
+        {
+          "file": "03-1.png",
+          "caption": "Exhibit 1: Median incomes vary depending on your circumstances"
+        },
+        {
+          "file": "03-2.png",
+          "caption": "Exhibit 2: Middle-income households\u2019 share of spending is somewhat proportionate to their share of total households"
+        },
+        {
+          "file": "03-3.png",
+          "caption": "Exhibit 6: Middle-income groups account for nearly a third of spending at grocery stores, hobby shops, general merchandise retailers and restaurants"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/economy/fed-rate-cuts",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Economy",
+      "title": "What\u2019s The Fed\u2019s Next Move?",
+      "dek": "The appointment of five new task forces could impact the future path of monetary policy, though the Fed is still expected to remain on hold for the rest of the year.",
+      "published": "2026-07-22",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 39,
+      "points": [
+        "Federal Reserve (Fed) chair Kevin Warsh has mandated five task forces to conduct an independent review of the central bank\u2019s policymaking process.",
+        "However, J.P. Morgan Global Research still expects the Fed to remain on hold for the rest of 2026, before hiking 25 basis points (bp) in September 2027.",
+        "Implementing task force recommendations will take time, as any significant change to the Fed\u2019s policy framework will require broader buy-in from the full Federal Open Market Committee (FOMC)."
+      ],
+      "pdf": "",
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/commodities/oil-prices",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Commodities",
+      "title": "Oil Prices Forecast",
+      "dek": "Surprising movements in supply and demand have complicated the outlook for oil prices.",
+      "published": "2026-07-16",
+      "themes": [
+        "oil"
+      ],
+      "score": 32,
+      "points": [
+        "J.P. Morgan Global Research now forecasts Brent crude to average $86 per barrel (bbl) in the third quarter of 2026, $80 in the fourth quarter and $78 at year end.",
+        "The oil market has rebalanced via larger-than-expected demand losses and smaller-than-expected OECD commercial inventory draws, with China providing a case study in possible demand destruction.",
+        "Long-term damage to oil production in the Gulf region is believed to be minimal, though the uncertain future of OPEC may complicate oil price predictions."
+      ],
+      "pdf": "",
+      "charts": [
+        {
+          "file": "05-1.svg",
+          "caption": "2027 Projection Table0726"
+        },
+        {
+          "file": "05-2.svg",
+          "caption": "In May and June, OECD oil inventories were projected to be significantly lower than the actual numbers reported to the IEA."
+        }
+      ]
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/small-business-checkpoint-july-2026.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 July 2026",
+      "title": "Small Business Checkpoint: Signs of improvement",
+      "dek": "Small business profitability has picked up along with hiring, but persistent cost pressures continue to constrain growth.",
+      "published": "2026-07-16",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 10,
+      "points": [
+        "For the first time since the start of the year, small business profitability growth turned positive in June, according to Bank of America account data. Revenues are growing, but not fast enough to fully offset ongoing cost pressures, which has led to a prolonged period - more than six years - of small business owners planning to raise prices to combat falling sales expectations.",
+        "Small firms are also contending with persistently higher interest rates. Still, rates have come down from their 2022 peak, and Bank of America loan payment growth per small business client has increased, suggesting modest demand although capex plans for small firms remains muted.",
+        "At the same time, small business hiring activity improved in June from earlier this year, according to Bank of America payments data. This was especially true for small finance, insurance and real estate firms, suggesting AI hasn't affected job demand in white collar industries."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/small-business-checkpoint-july-2026.pdf",
+      "charts": [
+        {
+          "file": "06-1.png",
+          "caption": "Exhibit 1: Small business profitability growth turned positive in June"
+        },
+        {
+          "file": "06-2.png",
+          "caption": "Exhibit 3: Small business gas spending growth was up 27% YoY in June"
+        },
+        {
+          "file": "06-3.png",
+          "caption": "Exhibit 5: Small business loan payment growth has slowly increased from early 2024, though is broadly stable"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/outlook/mid-year-outlook",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Outlook",
+      "title": "2026 Mid-Year Market Outlook",
+      "dek": "While the global expansion stands on solid ground, markets will need to balance competing forces as they head into the second half of the year.",
+      "published": "2026-07-01",
+      "themes": [
+        "us-macro",
+        "usd",
+        "global",
+        "metals",
+        "oil",
+        "us-stocks"
+      ],
+      "score": 17,
+      "points": [
+        "Global growth is supported by improving business sentiment, a resilient consumer and a surge in AI-driven capital spending, despite the oil supply shock.",
+        "J.P. Morgan Global Research is constructive on equities and has increased its S&P 500 year-end price target to 7,800.",
+        "Elsewhere, it is bullish on the dollar and has revised its oil price framework, with Brent now likely exiting the year at $78 per barrel (bbl)."
+      ],
+      "pdf": "",
+      "charts": [
+        {
+          "file": "07-1.svg",
+          "caption": "Line chart depicting the forecast for global core CPI, which is expected to hover close to 3%, as well as goods inflation and services inflation."
+        },
+        {
+          "file": "07-2.svg",
+          "caption": "Chart depicting 2026 forecasts for major currency pairs, namely EUR/USD, USD/JPY, GBP/USD, AUD/USD and USD/CNY."
+        },
+        {
+          "file": "07-3.svg",
+          "caption": "Infographic depicting December 2026 price forecasts for global commodities, namely Brent crude, gold, copper and wheat."
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/markets-and-economy/outlook/mid-year-investment-outlook",
+      "source": "J.P. Morgan",
+      "section": "Markets & Economy \u00b7 Outlook",
+      "title": "2026 Mid-Year Investment Outlook",
+      "dek": "Explore our Mid-Year Investment Outlook for 2026 and see our forecasts and potential investment opportunities amidst the evolving economic and market landscapes.",
+      "published": "2026-06-29",
+      "themes": [
+        "us-macro",
+        "us-stocks"
+      ],
+      "score": 15,
+      "points": [
+        "Economic momentum has increased in 2026 as the investment boom from the AI surge and consumption gains from wealth effects and big income tax refunds have more than offset the negative effects of Iran War uncertainty and higher energy prices.",
+        "CPI inflation hit a three-year high of 4.2% in May. However, it could drift down slowly from that level over the rest of 2026, provided there is a durable resolution to the Strait of Hormuz crisis, reflecting lower energy inflation, lower tariffs, lower shelter inflation and only moderate wage growth.",
+        "We expect the Fed to remain on hold for the rest of this year but could ease modestly in 2027, causing the dollar exchange rate to renew its decline.",
+        "Bonds are now priced for inflation and Fed rate hikes, with the short end of the yield curve offering a meaningful yield pick-up versus cash. While the Fed is on pause, the income across fixed income is not \u2013 and it is supported by solid municipal, corporate and household balance sheets."
+      ],
+      "pdf": "",
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/current-events/fifa-world-cup-equity-markets",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Current Events",
+      "title": "2026 FIFA World Cup: Could Equity Markets Score Big?",
+      "dek": "Besides potentially generating billions of dollars in GDP, the tournament could be a catalyst for certain consumer-facing sectors.",
+      "published": "2026-06-24",
+      "themes": [
+        "us-stocks",
+        "us-macro"
+      ],
+      "score": 20,
+      "points": [
+        "The 2026 FIFA World Cup is poised to generate a surge in consumption, which could result in a windfall for sectors such as accommodation and advertising.",
+        "Median domestic equity returns for host countries weigh in at roughly +10%, though historical performance has been mixed.",
+        "Headwinds for markets include a challenging macro backdrop, geopolitical uncertainty and growing concerns about the low-end consumer."
+      ],
+      "pdf": "",
+      "charts": [
+        {
+          "file": "09-1.svg",
+          "caption": "Infographic depicting the 2026 FIFA World Cup in numbers., in terms of expected attendance, global event-related expenditure and global GDP."
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/markets-and-economy/outlook/pb-equities-mid-year-update",
+      "source": "J.P. Morgan",
+      "section": "Markets & Economy \u00b7 Outlook",
+      "title": "2026 Mid-Year Outlook: Promise and Pressure",
+      "dek": "The Mid-Year Outlook report identifies 3 key themes for global investors in 2026: global fragmentation, inflation, and AI.",
+      "published": "2026-06-22",
+      "themes": [
+        "us-stocks",
+        "us-macro",
+        "global"
+      ],
+      "score": 13,
+      "points": [],
+      "pdf": "",
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/currencies/currency-volatility-dollar-strength",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Currencies",
+      "title": "Currency Volatility: Dollar Strength, Euro Weakness?",
+      "dek": "Recent macro developments, including rising inflation and the Fed\u2019s hawkish pivot, could spell good news for the greenback \u2014 but less so for the euro.",
+      "published": "2026-06-16",
+      "themes": [
+        "usd"
+      ],
+      "score": 59,
+      "points": [
+        "J.P. Morgan Global Research has upgraded its outlook for the dollar due to factors including the hawkish Fed repricing and a resilient U.S. labor market.",
+        "The forecast for the euro is bearish, especially as the growth divergence between the EU and the U.S. has widened.",
+        "Growing political uncertainty in the U.K. could exert downward pressure on sterling, though weakness will likely be contained."
+      ],
+      "pdf": "",
+      "charts": []
+    }
+  ],
+  "daily_insights": [
+    {
+      "title": "FX flows on the rise for small and medium-sized firms",
+      "date": "2026-07-27",
+      "url": "https://institute1.bofa.com/C?q=lezhEXL5nT4"
+    },
+    {
+      "title": "Middle-income families\u2019 spending remains pivotal to GDP",
+      "date": "2026-07-24",
+      "url": "https://institute1.bofa.com/C?q=QvsEB3RrAwI"
+    },
+    {
+      "title": "A great final and a great outcome for host city economies",
+      "date": "2026-07-23",
+      "url": "https://institute1.bofa.com/C?q=dNbyuS802Wk"
+    },
+    {
+      "title": "Emergency savings expectations shift across generations",
+      "date": "2026-07-22",
+      "url": "https://institute1.bofa.com/C?q=Vv5!bYPnx7Y"
+    },
+    {
+      "title": "Gen X entrepreneurs outnumber Gen Z four-to-one",
+      "date": "2026-07-21",
+      "url": "https://institute1.bofa.com/C?q=lijyZ5vx0DA"
+    },
+    {
+      "title": "Small business hiring continues to gain momentum",
+      "date": "2026-07-20",
+      "url": "https://institute1.bofa.com/C?q=iJefwYpqpvo"
+    },
+    {
+      "title": "Lower-income households trade down the most",
+      "date": "2026-07-17",
+      "url": "https://institute1.bofa.com/C?q=0sILNhq!mSE"
+    },
+    {
+      "title": "The final is set, and spending gains remain on the scoreboard",
+      "date": "2026-07-16",
+      "url": "https://institute1.bofa.com/C?q=-WWneRQGd3M"
+    },
+    {
+      "title": "Consumers search for value to offset price pressures",
+      "date": "2026-07-15",
+      "url": "https://institute1.bofa.com/C?q=fypidR3NMEY"
+    },
+    {
+      "title": "Increased job switching helps support June wage growth",
+      "date": "2026-07-14",
+      "url": "https://institute1.bofa.com/C?q=Jb8S8f81uW0"
+    },
+    {
+      "title": "June spending: More than a seasonal boost",
+      "date": "2026-07-13",
+      "url": "https://institute1.bofa.com/C?q=-5goNSGZjDI"
+    },
+    {
+      "title": "Consumer spending starts summer strong",
+      "date": "2026-07-10",
+      "url": "https://institute1.bofa.com/C?q=jAvSno4Cc4o"
+    },
+    {
+      "title": "Highs and lows for fans, but host cities continue to win",
+      "date": "2026-07-09",
+      "url": "https://institute1.bofa.com/C?q=daTz2gD8n1U"
+    },
+    {
+      "title": "Has the wage growth \u201cK\u201d closed?",
+      "date": "2026-07-08",
+      "url": "https://institute1.bofa.com/C?q=bQNQINZEDy4"
+    },
+    {
+      "title": "Payrolls improve across the pitch in June",
+      "date": "2026-07-07",
+      "url": "https://institute1.bofa.com/C?q=JmzTHtdvNQE"
+    },
+    {
+      "title": "The top 10% drive discretionary spending",
+      "date": "2026-07-06",
+      "url": "https://institute1.bofa.com/C?q=k09OpqOdSS4"
+    },
+    {
+      "title": "The World Cup consumer is finding the back of the net",
+      "date": "2026-07-02",
+      "url": "https://institute1.bofa.com/C?q=eYejjrjzCgs"
+    },
+    {
+      "title": "It\u2019s a love story: May is America\u2019s favorite month to say \u201cI do\u201d",
+      "date": "2026-07-01",
+      "url": "https://institute1.bofa.com/C?q=JpYiI7VXucY"
+    },
+    {
+      "title": "The big day gets bigger: Wedding spending up 8.5%",
+      "date": "2026-06-30",
+      "url": "https://institute1.bofa.com/C?q=j5JSYlJV!jw"
+    },
+    {
+      "title": "More businesses are inherited than purchased",
+      "date": "2026-06-29",
+      "url": "https://institute1.bofa.com/C?q=CKLt2V2lJqA"
+    },
+    {
+      "title": "More Americans favor buying a home over renting",
+      "date": "2026-06-26",
+      "url": "https://institute1.bofa.com/C?q=GLFHxrudIRM"
+    },
+    {
+      "title": "The Beautiful Game is working its magic on spending",
+      "date": "2026-06-25",
+      "url": "https://institute1.bofa.com/C?q=bevgm1p8090"
+    },
+    {
+      "title": "Deposits support a narrower spending growth \u201cK\u201d",
+      "date": "2026-06-24",
+      "url": "https://institute1.bofa.com/C?q=KCAbyAR6t3Q"
+    },
+    {
+      "title": "Denver was the only city to cut back on dining out in May",
+      "date": "2026-06-23",
+      "url": "https://institute1.bofa.com/C?q=Dv4D9uPzDME"
+    },
+    {
+      "title": "Small business hiring rises alongside strong AI spending",
+      "date": "2026-06-22",
+      "url": "https://institute1.bofa.com/C?q=f2LXt!9wyS8"
+    },
+    {
+      "title": "Knicks win big \u2013 so do NYC bars and restaurants",
+      "date": "2026-06-18",
+      "url": "https://institute1.bofa.com/C?q=I!PrM!Ya0xM"
+    },
+    {
+      "title": "The autonomous road to 10 host cities",
+      "date": "2026-06-17",
+      "url": "https://institute1.bofa.com/C?q=08JoHjoFAH4"
+    },
+    {
+      "title": "Roughly 21% of Gen Z households have a fitness payment",
+      "date": "2026-06-16",
+      "url": "https://institute1.bofa.com/C?q=PbKXAKS3fWc"
+    },
+    {
+      "title": "Lower- and middle-income cohorts\u2019 spending outpaces wages",
+      "date": "2026-06-15",
+      "url": "https://institute1.bofa.com/C?q=h2X3!OyR0t4"
+    }
+  ]
+}
