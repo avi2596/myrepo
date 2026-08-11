@@ -98,6 +98,22 @@ missing edition is easier to notice than a hollow one. It stages the edition
 data and archive index only, never source, and a second run on a day already
 built is detected and skipped rather than committed again.
 
+## The published page
+
+The brief is also published as an artifact at a fixed URL. That page is a
+static snapshot: it has no way to fetch a new edition, and the runtime
+capabilities a page can be granted do not include republishing itself. So
+keeping it current takes a second job.
+
+A scheduled cloud agent runs each Monday at 09:00 UTC, an hour or two after the
+Mac has pushed. It clones the repo, runs `--render-only` to rebuild the pages
+from the stored data, and republishes the newest edition to the same artifact
+URL. It never scrapes: the two research sites are blocked by that environment's
+proxy, and this job does not need them — only GitHub and PyPI.
+
+The URL is passed explicitly on every republish. Without it a second, unrelated
+artifact is created instead of the existing page being updated.
+
 ## Where the charts come from
 
 This is the part worth explaining, because the two desks publish nothing alike.
