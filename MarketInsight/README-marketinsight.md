@@ -70,6 +70,34 @@ claiming to have been built months after it was.
 Keeping the figures matters more than it looks: a source PDF can be revised or
 withdrawn, and once it is, a chart that was not saved cannot be recovered.
 
+## The weekly run
+
+`run-weekly.sh` builds an edition, commits it and pushes it. It is driven by
+launchd every Monday at 07:00:
+
+```
+cp com.avi.marketinsight.plist ~/Library/LaunchAgents/
+launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.avi.marketinsight.plist
+launchctl kickstart -p gui/$UID/com.avi.marketinsight   # run it now
+launchctl bootout gui/$UID/com.avi.marketinsight        # stop scheduling it
+```
+
+Output goes to `~/Library/Logs/marketinsight-weekly.log`.
+
+`StartCalendarInterval` is local time and follows the clocks, so it stays at
+07:00 through the daylight-saving change — a UTC cron would drift by an hour.
+If the Mac is asleep on Monday morning, launchd runs the job when it next wakes
+rather than skipping the week. It does need the machine to be on: a Mac that
+stays shut all Monday misses that edition, and the following run builds from
+that day rather than backfilling.
+
+The job refuses to commit a bad scrape. Fewer than three notes, or no charts at
+all, and it logs the failure and stops — a broken scrape ends with `nothing
+matched`, which on the page is indistinguishable from a quiet week, and a
+missing edition is easier to notice than a hollow one. It stages the edition
+data and archive index only, never source, and a second run on a day already
+built is detected and skipped rather than committed again.
+
 ## Where the charts come from
 
 This is the part worth explaining, because the two desks publish nothing alike.

@@ -69,7 +69,11 @@ if [ "$(echo "$STAGED" | wc -l | tr -d ' ')" = "1" ] && \
    [ "$STAGED" = "MarketInsight/reports/${TODAY:0:4}/$TODAY/report.json" ] && \
    [ "$(git -C "$REPO" diff --cached --numstat -- "$STAGED" | cut -f1-2)" = "1	1" ]; then
     log "only the build timestamp changed — already built today, nothing to commit"
-    git -C "$REPO" restore --staged "$STAGED"
+    # Put the file back rather than leaving a stray one-line diff behind, or it
+    # would ride along in next week's edition commit. The pages are then
+    # re-rendered so what they show matches what is stored again.
+    git -C "$REPO" restore --staged --worktree "$STAGED"
+    "$PYTHON" market_insight.py --render-only >/dev/null
     exit 0
 fi
 
