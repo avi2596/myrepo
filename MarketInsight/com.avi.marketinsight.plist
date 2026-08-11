@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+  The weekly run, as launchd sees it. Install with:
+
+      cp com.avi.marketinsight.plist ~/Library/LaunchAgents/
+      launchctl bootstrap gui/$UID ~/Library/LaunchAgents/com.avi.marketinsight.plist
+
+  and remove it again with `launchctl bootout gui/$UID/com.avi.marketinsight`.
+
+  StartCalendarInterval is local time, and it follows the clocks — unlike a UTC
+  cron, this stays at 07:00 through the daylight-saving change. If the Mac is
+  asleep at 07:00 on Monday, launchd runs the job when it next wakes rather
+  than skipping the week.
+-->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.avi.marketinsight</string>
+
+    <key>ProgramArguments</key>
+    <array>
+        <string>/bin/bash</string>
+        <string>/Users/avi/PycharmProjects/WelcomeScreen/MarketInsight/run-weekly.sh</string>
+    </array>
+
+    <key>StartCalendarInterval</key>
+    <dict>
+        <key>Weekday</key><integer>1</integer>
+        <key>Hour</key><integer>7</integer>
+        <key>Minute</key><integer>0</integer>
+    </dict>
+
+    <key>StandardOutPath</key>
+    <string>/Users/avi/Library/Logs/marketinsight-weekly.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/avi/Library/Logs/marketinsight-weekly.log</string>
+
+    <key>RunAtLoad</key>
+    <false/>
+    <key>ProcessType</key>
+    <string>Background</string>
+</dict>
+</plist>
