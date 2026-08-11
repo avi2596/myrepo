@@ -1,6 +1,7 @@
 {
   "date": "2026-08-11",
-  "built": "2026-08-11T12:54:44",
+  "built": "2026-08-11T14:50:47",
+  "previous": "2026-07-29",
   "articles": [
     {
       "url": "https://www.jpmorgan.com/insights/global-research/artificial-intelligence/dram-memory-shortage-from-ai",
@@ -20,6 +21,7 @@
         "The memory supply crunch is also straining cybersecurity infrastructure, with analysts warning that a major cyberattack could unleash an estimated $145 billion in additional chip demand on an already constrained market."
       ],
       "pdf": "",
+      "new": true,
       "charts": [
         {
           "file": "01-1.svg",
@@ -47,6 +49,7 @@
         "Kansas City got the golden boot, recording a 7% rise in card spending. But gains were broadly shared across host cities, with Philadelphia, Los Angeles, Miami and New York/New Jersey also enjoying substantial boosts. Host cities generally experienced stronger growth in restaurant and bar spending than non-host cities, particularly during the knockout stages."
       ],
       "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/on-the-ball-2026-final-score.pdf",
+      "new": true,
       "charts": [
         {
           "file": "02-1.png",
@@ -79,6 +82,7 @@
         "The five new Fed task forces are slated to deliver their findings by year-end, but this is unlikely to have a significant bearing on the near-term policy outlook."
       ],
       "pdf": "",
+      "new": false,
       "charts": []
     },
     {
@@ -98,6 +102,7 @@
         "Lower-income households saw after-tax wage growth accelerate to 5.2% YoY in July, surpassing higher-income households for the first time since December 2024, potentially aided by increased job switching and lower tax withholdings. Still, despite the strength in \"regular\" employment, the share of workers supplementing their income with gig work was up 0.4 percentage points YoY in June."
       ],
       "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/monthly-employment-report-july-2026.pdf",
+      "new": true,
       "charts": [
         {
           "file": "04-1.png",
@@ -131,6 +136,7 @@
         "Active ETF products continue to scale rapidly, representing more than 60% of new launches in each of the past six years."
       ],
       "pdf": "",
+      "new": true,
       "charts": [
         {
           "file": "05-1.svg",
@@ -158,6 +164,7 @@
         "Looking ahead, a relatively firm dollar through the end of 2026 could create headwinds for SME exporters, but a weaker dollar and improving global growth in 2027 may provide a more supportive backdrop, according to BofA Global Research."
       ],
       "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/sme-exports.pdf",
+      "new": false,
       "charts": [
         {
           "file": "06-1.png",
@@ -192,6 +199,7 @@
         "\u201cThe move, in theory, encourages foreign companies to use more U.S. steel and aluminum, which could drive incremental exports, while also supporting farmers, construction, logistics and manufacturers that rely on equipment currently treated as steel or aluminum derivatives,\u201d said Bill Peterson, senior analyst for Metals & Mining at J.P. Morgan."
       ],
       "pdf": "",
+      "new": false,
       "charts": [
         {
           "file": "07-1.svg",
@@ -220,6 +228,7 @@
         "Long-term damage to oil production in the Gulf region is believed to be minimal, though the uncertain future of OPEC may complicate oil price predictions."
       ],
       "pdf": "",
+      "new": false,
       "charts": [
         {
           "file": "08-1.svg",
@@ -253,6 +262,7 @@
         "Elsewhere, it is bullish on the dollar and has revised its oil price framework, with Brent now likely exiting the year at $78 per barrel (bbl)."
       ],
       "pdf": "",
+      "new": false,
       "charts": [
         {
           "file": "09-1.svg",
@@ -287,6 +297,7 @@
         "Bonds are now priced for inflation and Fed rate hikes, with the short end of the yield curve offering a meaningful yield pick-up versus cash. While the Fed is on pause, the income across fixed income is not \u2013 and it is supported by solid municipal, corporate and household balance sheets."
       ],
       "pdf": "",
+      "new": false,
       "charts": []
     }
   ],

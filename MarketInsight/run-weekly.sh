@@ -20,7 +20,17 @@ PYTHON="$REPO/.venv/bin/python"
 [ -x "$PYTHON" ] || PYTHON="$(command -v python3 || true)"
 
 log() { printf '%s  %s\n' "$(date '+%Y-%m-%d %H:%M:%S')" "$*"; }
-die() { log "FAILED: $*"; exit 1; }
+
+# A silent failure is the worst outcome here: the page simply goes on showing
+# last week's edition, and nothing says otherwise. So anything that stops the
+# run raises a notification rather than only a line in a log nobody opens.
+# Double quotes are stripped from the text because it is handed to AppleScript.
+notify() {
+    local title="${1//\"/}" body="${2//\"/}"
+    /usr/bin/osascript -e "display notification \"$body\" with title \"$title\"" \
+        >/dev/null 2>&1 || true
+}
+die() { log "FAILED: $*"; notify "Market Insight failed" "$*"; exit 1; }
 
 log "=== Market Insight weekly run ==="
 [ -n "$PYTHON" ] && [ -x "$PYTHON" ] || die "no usable Python (looked for $REPO/.venv/bin/python)"
@@ -47,6 +57,20 @@ log "produced $NOTES notes, $CHARTS charts"
 
 [ "$NOTES" -ge 3 ] || die "only $NOTES notes — treating as a broken scrape, not committing"
 [ "$CHARTS" -ge 1 ] || die "no charts extracted — treating as a broken scrape, not committing"
+
+# A Monday that never ran leaves no trace of its own — the job simply wasn't
+# there to complain. The gap only becomes visible on the next run that works,
+# so that run is where it gets reported.
+PREV="$(find "$HERE/reports" -mindepth 2 -maxdepth 2 -type d -exec basename {} \; 2>/dev/null \
+        | grep -v "^$TODAY$" | sort | tail -1)"
+if [ -n "$PREV" ]; then
+    GAP=$(( ( $(date -j -f '%Y-%m-%d' "$TODAY" '+%s') \
+             - $(date -j -f '%Y-%m-%d' "$PREV" '+%s') ) / 86400 ))
+    if [ "$GAP" -gt 10 ]; then
+        log "note: $GAP days since the previous edition ($PREV) — a run was missed"
+        notify "Market Insight gap" "$GAP days since the last edition ($PREV)"
+    fi
+fi
 
 if [ "$BRANCH" != "main" ]; then
     log "on branch '$BRANCH', not main — edition built and left uncommitted"

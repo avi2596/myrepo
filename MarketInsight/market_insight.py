@@ -212,10 +212,25 @@ class Article:
     score: int = 0
     charts: list[Chart] = field(default_factory=list)
     pdf_url: str = ""
+    is_new: bool = False                                # absent from the previous edition
 
     @property
     def primary(self) -> str:
         return self.themes[0] if self.themes else "us-macro"
+
+
+@dataclass
+class Edition:
+    """One day's brief, and what it is being compared against."""
+    day: date
+    articles: list[Article] = field(default_factory=list)
+    daily: list[dict] = field(default_factory=list)
+    built: str = ""
+    previous: str | None = None                         # the edition before this one
+
+    @property
+    def fresh(self) -> int:
+        return sum(1 for a in self.articles if a.is_new)
 
 
 # ------------------------------------------------------------- network layer
@@ -918,6 +933,11 @@ article.card{background:var(--card);border:1px solid var(--rule);border-radius:4
 .badges{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:12px;
         font-family:var(--mono);font-size:11px;letter-spacing:.05em;color:var(--ink-3)}
 .src{font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+/* Marks a note that was not in the previous edition. Weekly runs repeat most
+   of each subject's standing picture, so this is what the week's news is. */
+.new{font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:10px;
+     color:var(--paper);background:var(--accent);border-radius:2px;padding:2px 6px}
+article.card.is-new{border-left:2px solid var(--accent)}
 .src.jpm{color:var(--jpm)} .src.bofa{color:var(--bofa)}
 .sep{color:var(--rule)}
 .card h3{font-family:var(--serif);font-size:22px;line-height:1.22;font-weight:600;
@@ -977,8 +997,7 @@ def split_caption(caption: str) -> tuple[str, str]:
     return (hit.group(1), hit.group(2)) if hit else ("", caption)
 
 
-def render_report(day: date, articles: list[Article], daily: list[dict], dates: list[str],
-                  standalone: bool = True, built: str = "") -> str:
+def render_report(edition: Edition, dates: list[str], standalone: bool = True) -> str:
     """The brief itself.
 
     With standalone off the same page comes back without its outer document
@@ -986,8 +1005,15 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
     pointing at anchors, since the neighbouring editions are not there to
     link to.
     """
+    day, articles, daily = edition.day, edition.articles, edition.daily
     charts = sum(len(a.charts) for a in articles)
     long_day = day.strftime("%d %B %Y").lstrip("0")
+
+    since = ""
+    if edition.previous:
+        prior = date.fromisoformat(edition.previous).strftime("%d %b").lstrip("0")
+        since = (f'<span><strong>{edition.fresh} new</strong> since {esc(prior)}</span>'
+                 if edition.fresh else f'<span>nothing new since {esc(prior)}</span>')
 
     shown = dates if standalone else [day.isoformat()]
     rail = rail_markup(day.isoformat(), shown, standalone)
@@ -1007,6 +1033,9 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
                              key=lambda a: (a.published, a.score), reverse=True)[:2]
         if not members:
             continue
+        # Arrivals first. Within a subject the standing picture is mostly last
+        # week's, so what came in since then goes at the top of it.
+        members = sorted(members, key=lambda a: (a.is_new, a.published, a.score), reverse=True)
         cards = []
         for art in members:
             figures = []
@@ -1030,10 +1059,12 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
             cls = "jpm" if art.source == "J.P. Morgan" else "bofa"
             pdf = (f'<span class="sep">·</span><a href="{esc(art.pdf_url)}">full analysis (PDF)</a>'
                    if art.pdf_url else "")
+            flag = '<span class="new">New</span>' if art.is_new else ""
 
             cards.append(
-                f'<article class="card" data-themes="{" ".join(art.themes)}">'
-                f'<div class="badges"><span class="src {cls}">{esc(art.source)}</span>'
+                f'<article class="card{" is-new" if art.is_new else ""}" '
+                f'data-themes="{" ".join(art.themes)}">'
+                f'<div class="badges">{flag}<span class="src {cls}">{esc(art.source)}</span>'
                 f'<span class="sep">·</span><span>{esc(art.section)}</span>'
                 f'<span class="sep">·</span><time datetime="{art.published.isoformat()}">'
                 f'{esc(art.published.strftime("%d %b %Y").lstrip("0"))}</time>{pdf}</div>'
@@ -1101,9 +1132,10 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
   <div class="meta-row">
     <span><strong>{esc(long_day)}</strong></span>
     <span>{len(articles)} notes</span>
+    {since}
     <span>{charts} charts from source</span>
     <span>{len(daily)} daily items</span>
-    <span>Built {esc(built or datetime.now().strftime("%H:%M"))}</span>
+    <span>Built {esc(edition.built or datetime.now().strftime("%H:%M"))}</span>
   </div>
 </header>
 
@@ -1214,6 +1246,33 @@ def migrate_flat_editions() -> int:
     return moved
 
 
+def mark_new(articles: list[Article], day: date) -> str | None:
+    """Flag the notes that were not in the edition before this one.
+
+    Run weekly, consecutive editions overlap heavily: the recency window is far
+    wider than the gap between runs, so most of each subject's standing picture
+    repeats from one Monday to the next. Throwing the older notes out would lose
+    the context — the picture is the point — so instead the arrivals are marked
+    and sorted to the top, which is what makes the week's actual news findable.
+
+    Only report.json is read, not the assets beside it, so this stays cheap.
+    """
+    earlier = [d for d in edition_dates() if d < day.isoformat()]
+    if not earlier:
+        return None                                     # the first edition: nothing to compare
+    previous = max(earlier)
+    data = edition_dir(previous) / "report.json"
+    if not data.exists():
+        return None
+    try:
+        seen = {a["url"] for a in json.loads(data.read_text(encoding="utf-8"))["articles"]}
+    except (ValueError, KeyError):
+        return None
+    for art in articles:
+        art.is_new = art.url not in seen
+    return previous
+
+
 def rail_href(current: str, target: str) -> str:
     """A link from one edition to another, across year folders when needed."""
     if current[:4] == target[:4]:
@@ -1234,7 +1293,7 @@ def rail_markup(current: str, dates: list[str], standalone: bool = True) -> str:
     return "".join(parts)
 
 
-def load_edition(day: str) -> tuple[list[Article], list[dict], str] | None:
+def load_edition(day: str) -> Edition | None:
     """Rebuild an edition from what was stored for it.
 
     report.json holds the words and assets/ holds the figures, which together
@@ -1263,7 +1322,8 @@ def load_edition(day: str) -> tuple[list[Article], list[dict], str] | None:
             title=record["title"], dek=record["dek"],
             published=date.fromisoformat(record["published"]),
             points=record.get("points", []), themes=record.get("themes", []),
-            score=record.get("score", 0), charts=charts, pdf_url=record.get("pdf", "")))
+            score=record.get("score", 0), charts=charts, pdf_url=record.get("pdf", ""),
+            is_new=record.get("new", False)))
 
     # When the edition was built, not when its HTML was last written — so a
     # page regenerated months later still reports the run that gathered it,
@@ -1273,21 +1333,21 @@ def load_edition(day: str) -> tuple[list[Article], list[dict], str] | None:
         built = datetime.fromisoformat(blob["built"]).strftime("%H:%M")
     except (KeyError, ValueError):
         pass
-    return articles, blob.get("daily_insights", []), built
+    return Edition(day=date.fromisoformat(day), articles=articles,
+                   daily=blob.get("daily_insights", []), built=built,
+                   previous=blob.get("previous"))
 
 
-def write_pages(day: date, articles: list[Article], daily: list[dict],
-                dates: list[str], built: str = "") -> Path:
+def write_pages(edition: Edition, dates: list[str]) -> Path:
     """The two rendered forms of one edition."""
-    folder = edition_dir(day.isoformat())
+    folder = edition_dir(edition.day.isoformat())
     folder.mkdir(parents=True, exist_ok=True)
     page = folder / "index.html"
-    page.write_text(render_report(day, articles, daily, dates, built=built), encoding="utf-8")
+    page.write_text(render_report(edition, dates), encoding="utf-8")
     # The same edition without the outer document, for publishing somewhere
     # that wraps the content in its own.
     (folder / "artifact.html").write_text(
-        render_report(day, articles, daily, dates, standalone=False, built=built),
-        encoding="utf-8")
+        render_report(edition, dates, standalone=False), encoding="utf-8")
     return page
 
 
@@ -1302,7 +1362,8 @@ def write_archive(dates: list[str]) -> None:
     (HERE / "index.html").write_text(render_index(dates, summary), encoding="utf-8")
 
 
-def write_report(day: date, articles: list[Article], daily: list[dict]) -> Path:
+def write_report(edition: Edition) -> Path:
+    day, articles, daily = edition.day, edition.articles, edition.daily
     folder = edition_dir(day.isoformat())
     assets = folder / "assets"
     assets.mkdir(parents=True, exist_ok=True)
@@ -1321,7 +1382,7 @@ def write_report(day: date, articles: list[Article], daily: list[dict]) -> Path:
             "url": art.url, "source": art.source, "section": art.section,
             "title": art.title, "dek": art.dek, "published": art.published.isoformat(),
             "themes": art.themes, "score": art.score, "points": art.points,
-            "pdf": art.pdf_url,
+            "pdf": art.pdf_url, "new": art.is_new,
             "charts": [{"file": n, "caption": c.caption}
                        for n, c in zip(names, art.charts)],
         })
@@ -1329,10 +1390,12 @@ def write_report(day: date, articles: list[Article], daily: list[dict]) -> Path:
     now = datetime.now()
     (folder / "report.json").write_text(json.dumps(
         {"date": day.isoformat(), "built": now.isoformat(timespec="seconds"),
+         "previous": edition.previous,
          "articles": payload, "daily_insights": daily}, indent=2), encoding="utf-8")
 
+    edition.built = now.strftime("%H:%M")
     dates = edition_dates()
-    page = write_pages(day, articles, daily, dates, built=now.strftime("%H:%M"))
+    page = write_pages(edition, dates)
     write_archive(dates)
 
     # Earlier editions gain a link to this one. Where the rendered page is
@@ -1347,8 +1410,7 @@ def write_report(day: date, articles: list[Article], daily: list[dict]) -> Path:
         else:
             stored = load_edition(d)
             if stored:
-                past, past_daily, built = stored
-                write_pages(date.fromisoformat(d), past, past_daily, dates, built=built)
+                write_pages(stored, dates)
     return page
 
 
@@ -1392,8 +1454,7 @@ def main() -> int:
             if not stored:
                 print(f"  {d}: no report.json, skipped", file=sys.stderr)
                 continue
-            past, past_daily, built = stored
-            write_pages(date.fromisoformat(d), past, past_daily, dates, built=built)
+            write_pages(stored, dates)
             rebuilt += 1
         write_archive(dates)
         print(f"{rebuilt} of {len(dates)} editions rebuilt, plus the archive index")
@@ -1408,10 +1469,15 @@ def main() -> int:
         print("nothing matched — try a longer --days window", file=sys.stderr)
         return 1
 
-    page = write_report(today, articles, daily)
+    # What arrived since the last edition, before anything is written.
+    previous = mark_new(articles, today)
+    edition = Edition(day=today, articles=articles, daily=daily, previous=previous)
+
+    page = write_report(edition)
     charts = sum(len(a.charts) for a in articles)
     size = page.stat().st_size / 1_000_000
-    print(f"\n{len(articles)} notes · {charts} charts · {len(daily)} daily items")
+    fresh = (f" · {edition.fresh} new since {previous}" if previous else "")
+    print(f"\n{len(articles)} notes{fresh} · {charts} charts · {len(daily)} daily items")
     print(f"{page}  ({size:.1f} MB)")
     print(f"{HERE / 'index.html'}")
     return 0

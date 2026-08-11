@@ -91,6 +91,13 @@ rather than skipping the week. It does need the machine to be on: a Mac that
 stays shut all Monday misses that edition, and the following run builds from
 that day rather than backfilling.
 
+Anything that stops the run raises a macOS notification as well as logging it.
+A silent failure is the worst outcome here: the page simply goes on showing
+last week's edition and nothing says otherwise, which is exactly how an earlier
+scheduled version went unnoticed for a fortnight. A missed Monday leaves no
+trace of its own either — the job was not there to complain — so the next run
+that works reports the gap.
+
 The job refuses to commit a bad scrape. Fewer than three notes, or no charts at
 all, and it logs the failure and stops — a broken scrape ends with `nothing
 matched`, which on the page is indistinguishable from a quiet week, and a
@@ -166,6 +173,22 @@ mention of China cannot drag a US wage note into Global Markets.
 Notes are filed on the page under their strongest subject only, so a chart-heavy
 outlook is not printed six times. The other subjects it covers are listed as
 tags on the card.
+
+## What is new this week
+
+Run weekly, consecutive editions overlap heavily — the recency window is far
+wider than the gap between runs, so most of each subject's standing picture
+repeats from one Monday to the next. Measured across the first two editions,
+6 of 10 notes were carried over.
+
+Dropping the older notes would lose the context, which is the point of the
+page, so instead each note that was not in the previous edition is marked
+**New**, sorted to the top of its section, and counted in the masthead
+("4 new since 29 Jul"). The flag is stored in `report.json`, so a page rebuilt
+with `--render-only` months later still shows what was new at the time rather
+than recomputing it against whatever is on disk now.
+
+The first edition has nothing to compare against, so nothing is marked.
 
 ## Getting around the page
 
