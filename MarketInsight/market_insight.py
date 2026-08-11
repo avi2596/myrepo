@@ -1124,8 +1124,8 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
     return f"""{head}
 <div class="wrap">
 <header class="masthead">
-  <p class="kicker">Market Insight · Daily Brief</p>
-  <h1>What the research desks are saying today</h1>
+  <p class="kicker">Market Insight · Weekly Brief</p>
+  <h1>What the research desks are saying this week</h1>
   <p class="standfirst">The public research from J.P. Morgan Global Research and the Bank of
     America Institute, filtered to the US stock market, US macroeconomics, the dollar, oil,
     metals and global markets — with every chart lifted from the source document.</p>
@@ -1198,8 +1198,8 @@ def render_index(dates: list[str], latest: dict) -> str:
 <div class="wrap">
 <header class="masthead">
   <p class="kicker">Market Insight</p>
-  <h1>Daily briefs</h1>
-  <p class="standfirst">One edition per day, built from J.P. Morgan Global Research and the
+  <h1>Every edition</h1>
+  <p class="standfirst">One edition a week, built from J.P. Morgan Global Research and the
     Bank of America Institute. The newest is at the top.</p>
 </header>
 <ul class="arch">{"".join(rows)}</ul>
