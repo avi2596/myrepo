@@ -1018,7 +1018,12 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
                     f'<img src="{chart.data_uri()}" alt="{esc(chart.caption)}" loading="lazy"></div>'
                     f'<figcaption>{cap}</figcaption></figure>')
 
-            points = "".join(f"<li>{esc(p)}</li>" for p in art.points[:4])
+            # Built up before the f-string rather than inside it: nesting a
+            # quoted f-string within another needs Python 3.12, and this has to
+            # run on whatever interpreter it lands on.
+            bullets = "".join(f"<li>{esc(p)}</li>" for p in art.points[:4])
+            points = f'<ul class="points">{bullets}</ul>' if bullets else ""
+            gallery = f'<div class="figures">{"".join(figures)}</div>' if figures else ""
             tags = "".join(
                 f'<span class="tag"><span class="dot" style="background:{THEMES[t]["dot"]}"></span>'
                 f'{esc(THEMES[t]["label"])}</span>' for t in art.themes)
@@ -1034,9 +1039,9 @@ def render_report(day: date, articles: list[Article], daily: list[dict], dates: 
                 f'{esc(art.published.strftime("%d %b %Y").lstrip("0"))}</time>{pdf}</div>'
                 f'<h3><a href="{esc(art.url)}">{esc(art.title)}</a></h3>'
                 f'<p class="dek">{esc(art.dek)}</p>'
-                f'{f"<ul class=\"points\">{points}</ul>" if points else ""}'
+                f'{points}'
                 f'<div class="tags">{tags}</div>'
-                f'{f"<div class=\"figures\">{"".join(figures)}</div>" if figures else ""}'
+                f'{gallery}'
                 f'</article>')
 
         landed.add(theme)

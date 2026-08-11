@@ -13,7 +13,12 @@ python market_insight.py --no-cache      # ignore cached pages
 python market_insight.py --render-only   # rebuild every page from stored data
 ```
 
-Requires Python 3.12+ and `pip install -r requirements-marketinsight.txt`.
+Requires Python 3.9+ and `pip install -r requirements-marketinsight.txt`.
+
+It also needs to reach `www.jpmorgan.com` and `institute.bankofamerica.com`
+directly. Behind a proxy that filters outbound hosts, both must be allowlisted —
+otherwise every fetch fails and the run ends with `nothing matched`, which looks
+identical to a quiet week.
 
 ## What it produces
 
