@@ -53,10 +53,23 @@ if [ "$BRANCH" != "main" ]; then
     exit 0
 fi
 
-# The rendered HTML is gitignored; this stages the stored data only.
-git -C "$REPO" add MarketInsight/
-if [ -z "$(git -C "$REPO" diff --cached --name-only)" ]; then
+# Only the edition data and the archive index — never the source. Staging the
+# whole folder would sweep up whatever happened to be sitting there unfinished
+# and commit it under an edition's name.
+git -C "$REPO" add MarketInsight/reports MarketInsight/index.html
+STAGED="$(git -C "$REPO" diff --cached --name-only)"
+if [ -z "$STAGED" ]; then
     log "no change to commit (already built today) — done"
+    exit 0
+fi
+
+# Re-running on a day already built rewrites report.json's build time and
+# nothing else. That is not an edition, so don't make a commit out of it.
+if [ "$(echo "$STAGED" | wc -l | tr -d ' ')" = "1" ] && \
+   [ "$STAGED" = "MarketInsight/reports/${TODAY:0:4}/$TODAY/report.json" ] && \
+   [ "$(git -C "$REPO" diff --cached --numstat -- "$STAGED" | cut -f1-2)" = "1	1" ]; then
+    log "only the build timestamp changed — already built today, nothing to commit"
+    git -C "$REPO" restore --staged "$STAGED"
     exit 0
 fi
 
