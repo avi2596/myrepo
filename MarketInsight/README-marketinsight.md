@@ -105,30 +105,25 @@ missing edition is easier to notice than a hollow one. It stages the edition
 data and archive index only, never source, and a second run on a day already
 built is detected and skipped rather than committed again.
 
-## The published page
+## The published pages
 
-The brief is also published as an artifact at a fixed URL. That page is a
-static snapshot: it has no way to fetch a new edition, and the runtime
-capabilities a page can be granted do not include republishing itself. So
-keeping it current takes a second job.
+Every edition is published at a permanent URL of its own, and keeps it. Which
+edition lives where is recorded in `published.json`, committed alongside the
+data, so a later run republishes to the same address instead of minting a
+second copy of the same week.
 
-A scheduled cloud agent runs each Monday at 09:00 UTC, an hour or two after the
-Mac has pushed. It clones the repo, runs `--render-only` to rebuild the pages
-from the stored data, and republishes the newest edition to the same artifact
-URL. It never scrapes: the two research sites are blocked by that environment's
-proxy, and this job does not need them — only GitHub and PyPI.
+The archive is the standing page: it is the one address that never changes and
+always lists everything, newest first. Each edition links back to it, which is
+the only cross-link that cannot go stale — listing sibling editions inside a
+published page would be wrong the moment another one appeared.
 
-Two pages are published, each to its own fixed URL: the current edition, and
-the archive listing every edition. The job republishes both from the same run.
+A scheduled cloud agent does this each Monday at 09:00 UTC, an hour or two
+after the Mac has pushed. It renders the pages from stored data, mints a URL
+for the new edition, commits that URL to `published.json`, and republishes the
+archive. It never scrapes: the two research sites are blocked by that
+environment's proxy, and this job does not need them — only GitHub and PyPI.
 
-The URL is passed explicitly on every republish. Without it a second, unrelated
-artifact is created instead of the existing page being updated.
-
-The published archive cannot link the way the local one does. On disk the
-editions sit in folders beside it; published, it is a single self-contained
-document, and only one edition is published at a time — at a URL that always
-carries the newest. So the newest row links there and earlier rows are listed
-without a link rather than pointing somewhere that would be wrong a week later.
+Artifacts are private until shared from the page's own share menu.
 
 ## Where the charts come from
 

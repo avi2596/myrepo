@@ -91,9 +91,15 @@ BOFA_SECTIONS = {
 }
 BOFA_HUBS = ("", "economic-insights", "institute-insights", "transformation")
 
-# The published edition page. One URL, always carrying the newest edition —
-# which is why the published archive can only link the newest row to it.
-EDITION_ARTIFACT = "https://claude.ai/code/artifact/ee34e60c-7cb2-4ed5-bd4f-6fc4b946ee39"
+# Every edition is published at a permanent URL of its own, which never changes
+# once minted — so the archive is the standing address: it is the one page that
+# always lists the newest, and the way back to any older one.
+ARCHIVE_ARTIFACT = "https://claude.ai/code/artifact/fd70b7d3-8ff1-4148-b6af-bf8e8aa2be42"
+
+# Which edition is published where, as {date: url}. Committed, so the next run
+# knows what already exists and republishes to the same address rather than
+# minting a second copy of the same edition.
+PUBLISHED = HERE / "published.json"
 
 CACHE_TTL = 6 * 3600                                    # seconds a page stays fresh
 POLITE_DELAY = 0.4                                      # between network requests
@@ -924,6 +930,8 @@ a.tile:hover .l{color:var(--ink-2)}
 .rail nav a:hover{background:var(--rule-2);color:var(--ink)}
 .rail nav a[aria-current="page"]{border-left-color:var(--accent);background:var(--accent-soft);
             color:var(--ink);font-weight:600}
+.rail nav a.all{border-left-color:transparent;color:var(--accent);margin-top:10px}
+.rail nav a.all:hover{background:var(--accent-soft)}
 /* sections and cards */
 .theme{margin-bottom:52px;scroll-margin-top:24px}
 .theme-head{display:flex;align-items:baseline;gap:12px;padding-bottom:10px;
@@ -1021,6 +1029,11 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
 
     shown = dates if standalone else [day.isoformat()]
     rail = rail_markup(day.isoformat(), shown, standalone)
+    if not standalone:
+        # Published, this page has no siblings on disk to link to, and listing
+        # the others by URL would go stale the moment another is published.
+        # One link to the archive stays right for ever.
+        rail += f'<a class="all" href="{ARCHIVE_ARTIFACT}">All editions →</a>' 
 
     sections, landed = [], set()
     for theme in THEME_ORDER:
@@ -1170,14 +1183,13 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
 def render_index(dates: list[str], latest: dict, standalone: bool = True) -> str:
     """The archive: one row per edition, newest first.
 
-    Published, this page cannot link the way the local one does. The editions
-    sit beside it as files on disk, but an artifact is a single self-contained
-    document with no folder around it — and only one edition is published at a
-    time, at a URL that always carries the newest. So away from disk the newest
-    row points at that URL and the earlier ones are listed without a link,
-    which is honest about where they actually are.
+    Published, this page cannot link the way the local one does: an artifact is
+    a single self-contained document with no folder around it. Instead each
+    edition keeps a permanent URL of its own, recorded in published.json, and
+    the rows point there. A row whose edition has not been published yet is
+    listed without a link rather than pointing somewhere that does not exist.
     """
-    newest = dates[0] if dates else None
+    live = published_urls()
     rows = []
     for year, group in groupby(dates, key=lambda d: d[:4]):
         rows.append(f'<li class="yr"><h2>{esc(year)}</h2></li>')
@@ -1185,19 +1197,14 @@ def render_index(dates: list[str], latest: dict, standalone: bool = True) -> str
             info = latest.get(d, {})
             when = esc(date.fromisoformat(d).strftime("%d %B %Y").lstrip("0"))
             counts = f'{info.get("articles", 0)} notes · {info.get("charts", 0)} charts'
-            if standalone:
-                href = f"reports/{d[:4]}/{d}/index.html"
-            elif d == newest:
-                href = EDITION_ARTIFACT
-            else:
-                href = ""
+            href = f"reports/{d[:4]}/{d}/index.html" if standalone else live.get(d, "")
             inner = (f'<time datetime="{d}">{when}</time><span>{counts}</span>')
             rows.append(f'<li><a href="{esc(href)}">{inner}</a></li>' if href
                         else f'<li><div class="row">{inner}</div></li>')
 
     note = "" if standalone else (
-        '<p class="empty">Only the current edition is published. Earlier ones are kept as '
-        'data in the repository and can be rebuilt from it at any time.</p>')
+        '<p class="empty">Every edition keeps its own address, and keeps it for good. '
+        'This page is the one that changes: it gains a row each week.</p>')
 
     head = f"""<!DOCTYPE html>
 <html lang="en">
@@ -1256,6 +1263,17 @@ def render_index(dates: list[str], latest: dict, standalone: bool = True) -> str
 
 
 # --------------------------------------------------------------------- main
+
+def published_urls() -> dict[str, str]:
+    """Which edition is published where. Empty if nothing has been yet."""
+    if not PUBLISHED.exists():
+        return {}
+    try:
+        found = json.loads(PUBLISHED.read_text(encoding="utf-8"))
+    except ValueError:
+        return {}
+    return {k: v for k, v in found.items() if isinstance(v, str) and v.startswith("http")}
+
 
 def edition_dir(day: str) -> Path:
     """Where one edition lives: reports/<year>/<date>/."""
