@@ -12,3 +12,4 @@
 # It reproduces them byte for byte, build timestamp included.
 reports/*/*/index.html
 reports/*/*/artifact.html
+index-artifact.html

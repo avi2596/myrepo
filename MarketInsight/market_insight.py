@@ -91,6 +91,10 @@ BOFA_SECTIONS = {
 }
 BOFA_HUBS = ("", "economic-insights", "institute-insights", "transformation")
 
+# The published edition page. One URL, always carrying the newest edition —
+# which is why the published archive can only link the newest row to it.
+EDITION_ARTIFACT = "https://claude.ai/code/artifact/ee34e60c-7cb2-4ed5-bd4f-6fc4b946ee39"
+
 CACHE_TTL = 6 * 3600                                    # seconds a page stays fresh
 POLITE_DELAY = 0.4                                      # between network requests
 INLINE_BUDGET = 4_600_000                               # base64 bytes of chart data in one page
@@ -1163,17 +1167,39 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
 """
 
 
-def render_index(dates: list[str], latest: dict) -> str:
+def render_index(dates: list[str], latest: dict, standalone: bool = True) -> str:
+    """The archive: one row per edition, newest first.
+
+    Published, this page cannot link the way the local one does. The editions
+    sit beside it as files on disk, but an artifact is a single self-contained
+    document with no folder around it — and only one edition is published at a
+    time, at a URL that always carries the newest. So away from disk the newest
+    row points at that URL and the earlier ones are listed without a link,
+    which is honest about where they actually are.
+    """
+    newest = dates[0] if dates else None
     rows = []
     for year, group in groupby(dates, key=lambda d: d[:4]):
         rows.append(f'<li class="yr"><h2>{esc(year)}</h2></li>')
         for d in group:
             info = latest.get(d, {})
-            rows.append(
-                f'<li><a href="reports/{d[:4]}/{d}/index.html">'
-                f'<time datetime="{d}">{esc(date.fromisoformat(d).strftime("%d %B %Y").lstrip("0"))}</time>'
-                f'<span>{info.get("articles", 0)} notes · {info.get("charts", 0)} charts</span></a></li>')
-    return f"""<!DOCTYPE html>
+            when = esc(date.fromisoformat(d).strftime("%d %B %Y").lstrip("0"))
+            counts = f'{info.get("articles", 0)} notes · {info.get("charts", 0)} charts'
+            if standalone:
+                href = f"reports/{d[:4]}/{d}/index.html"
+            elif d == newest:
+                href = EDITION_ARTIFACT
+            else:
+                href = ""
+            inner = (f'<time datetime="{d}">{when}</time><span>{counts}</span>')
+            rows.append(f'<li><a href="{esc(href)}">{inner}</a></li>' if href
+                        else f'<li><div class="row">{inner}</div></li>')
+
+    note = "" if standalone else (
+        '<p class="empty">Only the current edition is published. Earlier ones are kept as '
+        'data in the repository and can be rebuilt from it at any time.</p>')
+
+    head = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -1192,9 +1218,29 @@ def render_index(dates: list[str], latest: dict) -> str:
 .arch li.yr:first-child{{padding-top:0}}
 .arch li.yr h2{{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--accent);
                 margin:0;font-weight:600}}
+.arch .row{{display:flex;justify-content:space-between;gap:20px;align-items:baseline;
+           padding:15px 4px;opacity:.65}}
 </style>
 </head>
-<body>
+<body>""" if standalone else f"""<title>Market Insight · Archive</title>
+<style>{CSS}
+.arch{{list-style:none;margin:0;padding:0;max-width:640px}}
+.arch li{{border-top:1px solid var(--rule)}}
+.arch li:last-child{{border-bottom:1px solid var(--rule)}}
+.arch a{{display:flex;justify-content:space-between;gap:20px;align-items:baseline;
+        padding:15px 4px;text-decoration:none}}
+.arch a:hover{{background:var(--rule-2)}}
+.arch time{{font-family:var(--serif);font-size:19px}}
+.arch span{{font-family:var(--mono);font-size:11.5px;color:var(--ink-3)}}
+.arch li.yr{{border:0;padding:26px 0 4px}}
+.arch li.yr:first-child{{padding-top:0}}
+.arch li.yr h2{{font-family:var(--mono);font-size:11px;letter-spacing:.16em;color:var(--accent);
+                margin:0;font-weight:600}}
+.arch .row{{display:flex;justify-content:space-between;gap:20px;align-items:baseline;
+           padding:15px 4px;opacity:.65}}
+</style>"""
+
+    return f"""{head}
 <div class="wrap">
 <header class="masthead">
   <p class="kicker">Market Insight</p>
@@ -1203,9 +1249,9 @@ def render_index(dates: list[str], latest: dict) -> str:
     Bank of America Institute. The newest is at the top.</p>
 </header>
 <ul class="arch">{"".join(rows)}</ul>
+{note}
 </div>
-</body>
-</html>
+{"</body>" + chr(10) + "</html>" if standalone else ""}
 """
 
 
@@ -1360,6 +1406,8 @@ def write_archive(dates: list[str]) -> None:
             summary[d] = {"articles": len(blob["articles"]),
                           "charts": sum(len(a["charts"]) for a in blob["articles"])}
     (HERE / "index.html").write_text(render_index(dates, summary), encoding="utf-8")
+    (HERE / "index-artifact.html").write_text(
+        render_index(dates, summary, standalone=False), encoding="utf-8")
 
 
 def write_report(edition: Edition) -> Path:

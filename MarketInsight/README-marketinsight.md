@@ -118,8 +118,17 @@ from the stored data, and republishes the newest edition to the same artifact
 URL. It never scrapes: the two research sites are blocked by that environment's
 proxy, and this job does not need them — only GitHub and PyPI.
 
+Two pages are published, each to its own fixed URL: the current edition, and
+the archive listing every edition. The job republishes both from the same run.
+
 The URL is passed explicitly on every republish. Without it a second, unrelated
 artifact is created instead of the existing page being updated.
+
+The published archive cannot link the way the local one does. On disk the
+editions sit in folders beside it; published, it is a single self-contained
+document, and only one edition is published at a time — at a URL that always
+carries the newest. So the newest row links there and earlier rows are listed
+without a link rather than pointing somewhere that would be wrong a week later.
 
 ## Where the charts come from
 
