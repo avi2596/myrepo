@@ -1,0 +1,502 @@
+{
+  "date": "2026-09-07",
+  "built": "2026-09-07T10:04:21",
+  "previous": "2026-08-31",
+  "articles": [
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/currencies/de-dollarization",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Currencies",
+      "title": "De-dollarization: The End of Dollar Dominance?",
+      "dek": "Top dollar no more? Discover the factors threatening the dominance of the world\u2019s reserve currency and how this is playing out across markets.",
+      "published": "2026-09-04",
+      "themes": [
+        "usd"
+      ],
+      "score": 47,
+      "points": [
+        "While the U.S.\u2019s share of global trade has declined, the dollar\u2019s transactional dominance is still evident in areas including FX volumes and trade invoicing.",
+        "While there are currently no scalable alternatives to the dollar, China is settling more trades in yuan, while BRICS nations are exploring a common currency to reduce their dependence on the dollar.",
+        "Currently, the dollar-centric system gives the U.S. significant geopolitical leverage beyond cheaper funding costs, including the ability to impose sanctions and control payment systems."
+      ],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "01-1.svg",
+          "caption": "Bar chart depicting the dominance of the U.S. dollar versus other currencies in FX reserves, international debt, international loans, trade invoicing, international payments and FX transactions."
+        }
+      ]
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/monthly-employment-report-august-2026.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 September 2026",
+      "title": "The Institute Employment Report: August 2026",
+      "dek": "Growth in jobs and after-tax wages softened in August, but both continue to suggest a broadly resilient labor market.",
+      "published": "2026-09-03",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 20,
+      "points": [
+        "Bank of America customer deposit account data suggests labor market momentum cooled in August, with estimated payroll growth of 1.5% year-over-year (YoY), down from 1.8% in July.",
+        "The long-standing \"K\" shape between higher- and lower-income households' after-tax wage growth has reversed: August saw lower-income households' after-tax wage growth of 4.7% YoY, while higher-income households' after-tax wage growth was 3.5% YoY.",
+        "Recently, there has been an increase in job switching, and the pay change associated with a job change reached the highest level in more than three years in July. This acceleration is most notable among weekly-paid employees, suggesting rising mobility among hourly and lower-income workers may be contributing to the narrowing of wage growth differences."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/monthly-employment-report-august-2026.pdf",
+      "new": true,
+      "charts": [
+        {
+          "file": "02-1.png",
+          "caption": "Exhibit 1: August payroll growth slowed in Bank of America deposit account data"
+        },
+        {
+          "file": "02-2.png",
+          "caption": "Exhibit 3: After-tax wage growth cooled across income cohorts in August"
+        },
+        {
+          "file": "02-3.png",
+          "caption": "Exhibit 6: The jump in pay associated with a job change has been strongest year-to-date in jobs with weekly paychecks"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/markets-and-economy/markets/the-rush-for-resources",
+      "source": "J.P. Morgan",
+      "section": "Markets & Economy \u00b7 Markets",
+      "title": "The Rush for Resources",
+      "dek": "How rising geopolitical tensions are driving the strategic control of commodities and rewriting the playbook",
+      "published": "2026-09-02",
+      "themes": [
+        "metals",
+        "global",
+        "us-macro"
+      ],
+      "score": 15,
+      "points": [
+        "Geopolitics is increasingly influencing commodity pricing, volatility, and investor behavior.",
+        "Strategic stockpiling and supply chain security are becoming governmental priorities.",
+        "Investors are looking beyond fundamentals as tariffs, conflict, and policy disruption reshape markets."
+      ],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "03-1.svg",
+          "caption": "geopolitics has become the primary market driver"
+        },
+        {
+          "file": "03-2.png",
+          "caption": "Close-up of a printed financial chart with a jagged line trending downward, suggesting a drop in market performance."
+        },
+        {
+          "file": "03-3.svg",
+          "caption": "policy tools are driving inflation and rates expectations"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/markets-and-economy/markets/commodities-in-a-changing-geopolitical-landscape",
+      "source": "J.P. Morgan",
+      "section": "Markets & Economy \u00b7 Markets",
+      "title": "Commodities in a changing geopolitical landscape",
+      "dek": "Mischa-Von-Derek Aikman, Head of Commodities Institutional Sales for the Americas at J.P. Morgan, discusses how global tensions are changing the commodities landscape\u2014and what it means for investors navigating increasingly volatile markets.",
+      "published": "2026-09-02",
+      "themes": [
+        "global",
+        "metals"
+      ],
+      "score": 14,
+      "points": [
+        "Adjust your filter selections to find what you\u2019re looking for"
+      ],
+      "pdf": "",
+      "new": true,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/markets-and-economy/markets/the-certainty-of-uncertainty",
+      "source": "J.P. Morgan",
+      "section": "Markets & Economy \u00b7 Markets",
+      "title": "Volatility is no longer the exception",
+      "dek": "Geopolitical shocks, commodity swings, retail flows, and rapid reversals are changing how markets move. Explore how institutional traders are managing volatility as an ongoing condition\u2014using data, technology, and judgment to respond faster and think further ahead.",
+      "published": "2026-08-28",
+      "themes": [
+        "metals",
+        "oil",
+        "global",
+        "us-macro",
+        "us-stocks",
+        "usd"
+      ],
+      "score": 11,
+      "points": [
+        "Volatility, now considered a defining feature of today\u2019s markets, is forcing investors to rethink how they manage risk, build resilience, and target opportunities.",
+        "Geopolitical fragmentation, commodity disruption, and retail participation are making market moves faster, sharper, and harder to read.",
+        "Technology is helping traders process information and respond more efficiently to changing market conditions, while advances in execution tools, data, and analytics are reshaping how risk is monitored and managed."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": [
+        {
+          "file": "05-1.png",
+          "caption": "collage of gold and factories"
+        },
+        {
+          "file": "05-2.svg",
+          "caption": "e-trading survey results 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/restaurants-and-discretionary-spending.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 August 2026",
+      "title": "Restaurants: What\u2019s cooking in consumer spending?",
+      "dek": "A restaurant rebound is taking shape, powered by stronger wage growth, Gen Z spending and independent eateries.",
+      "published": "2026-08-24",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 19,
+      "points": [
+        "Americans are dining out again, according to Bank of America card data. Restaurant spending and transaction growth have both improved meaningfully in 2026. Some consumer food spend also appears to be shifting from grocery stores to restaurants, helped by easing restaurant inflation, trade-offs in the grocery space, and faster after-tax wage growth than a year ago.",
+        "The restaurant recovery is being led by younger and lower-income consumers, supported by improving wage growth, according to Bank of America internal data. Lower-income households are now posting the fastest restaurant spending growth among income groups, while Gen Z leads all generations by a wide margin.",
+        "Consumers are favoring local restaurants over large chains, according to Bank of America card data. Despite accelerating restaurant spending, some national chains are not fully participating in the rebound. Spending growth appears strongest at independent restaurants, regional operators and other non-chain establishments."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/restaurants-and-discretionary-spending.pdf",
+      "new": false,
+      "charts": [
+        {
+          "file": "06-1.png",
+          "caption": "Exhibit 1: Restaurant spending and transaction growth has improved in 2026 versus 2025"
+        },
+        {
+          "file": "06-2.png",
+          "caption": "Exhibit 2: Consumers seem to be shifting some of their grocery spending to restaurants"
+        },
+        {
+          "file": "06-3.png",
+          "caption": "Exhibit 5: Overall restaurant spending is outpacing many larger national chains"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/commodities/aluminum-steel-copper-prices",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Commodities",
+      "title": "Metals Outlook: Price Forecasts for Copper, Steel and Aluminum",
+      "dek": "From tariffs to capex to geopolitics, what are the forces shaping the industrial metals market?",
+      "published": "2026-08-22",
+      "themes": [
+        "metals"
+      ],
+      "score": 54,
+      "points": [
+        "J.P. Morgan Global Research forecasts the price of copper to reach $14,800/metric ton (mt) in the fourth quarter of this year, driven by sulfur shortages, tight mine supply, an industrial boom and the threat of U.S. tariffs.",
+        "The price of aluminum is forecasted to reach $3,800 per metric ton in the third quarter of 2026, and $3,700 in the fourth quarter, based on supply disruptions arising from the Middle East conflict and possible shifts in Chinese export policy.",
+        "The price of steel remains highly region-dependent, with tariffs keeping prices elevated in the U.S. and EU, while China\u2019s property slump has driven prices down."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/commodities/silver-prices",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Commodities",
+      "title": "Silver Price Forecast for 2026 and 2027",
+      "dek": "With tightness unwinding and rate hikes on the horizon, silver prices face an uncertain future.",
+      "published": "2026-08-13",
+      "themes": [
+        "metals"
+      ],
+      "score": 32,
+      "points": [
+        "J.P. Morgan Global Research forecasts the price of silver will reach $63 per ounce in the fourth quarter (Q4) of 2026, averaging $70/oz for the year and $63/oz in 2027.",
+        "This transition has also pushed the gold-to-silver price ratio back to more traditional levels, in which gold dominates.",
+        "Along with taking cues from gold, silver\u2019s price path could be determined by the direction of interest rates, with a hike likely dampening the appeal of precious metals."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/artificial-intelligence/dram-memory-shortage-from-ai",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Artificial Intelligence",
+      "title": "The AI-Driven Memory Shortage: DRAM Prices, Inflation and Market Risks",
+      "dek": "The latest bottleneck in AI expansion is memory chip and DRAM storage, with knock-on effects in inflation and national security.",
+      "published": "2026-08-06",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 16,
+      "points": [
+        "AI data center construction and hyperscaler demand are absorbing a disproportionate share of global memory capacity, creating a dynamic random access memory (DRAM) shortage that may take years to unwind.",
+        "J.P. Morgan Global Research estimates that DRAM prices will have risen more than 400% from the start of 2024 to the end of 2026.",
+        "The Consumer Price Index (CPI) for software and accessories and Producer Price Index (PPI) for storage devices have both risen 23% since the end of 2024.",
+        "The memory supply crunch is also straining cybersecurity infrastructure, with analysts warning that a major cyberattack could unleash an estimated $145 billion in additional chip demand on an already constrained market."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": [
+        {
+          "file": "09-1.svg",
+          "caption": "Memory prices graph"
+        },
+        {
+          "file": "09-2.svg",
+          "caption": "Prices indexes graph"
+        }
+      ]
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/on-the-ball-2026-final-score.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 August 2026",
+      "title": "On the ball: World Cup 2026 final score",
+      "dek": "The FIFA World Cup 2026\u2122 delivered a clear spending boost to US host cities, led by traveling fans.",
+      "published": "2026-08-06",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 12,
+      "points": [
+        "The FIFA World Cup 2026\u2122 boosted local spending, led by traveling fans, according to Bank of America credit and debit card data. Over the tournament, card spending in host cities rose around 5% year-over-year (YoY), with the strongest gains coming from non-locals, whose spending was up more than 17% YoY. Restaurants and bars were the clearest beneficiaries as fans splashed out on hospitality.",
+        "Kansas City got the golden boot, recording a 7% rise in card spending. But gains were broadly shared across host cities, with Philadelphia, Los Angeles, Miami and New York/New Jersey also enjoying substantial boosts. Host cities generally experienced stronger growth in restaurant and bar spending than non-host cities, particularly during the knockout stages."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/on-the-ball-2026-final-score.pdf",
+      "new": false,
+      "charts": [
+        {
+          "file": "10-1.png",
+          "caption": "Exhibit 2: Spending rose sharply at restaurants and bars during the World Cup"
+        },
+        {
+          "file": "10-2.png",
+          "caption": "Exhibit 3: Kansas City saw the largest boost to spending over the tournament"
+        },
+        {
+          "file": "10-3.png",
+          "caption": "Exhibit 4: Host cities saw a clear boost to spending on food and drink compared to other cities\u2026."
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/investing/etf-guide",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Investing",
+      "title": "ETF Market Guide: Understanding the $22 Trillion Industry",
+      "dek": "ETFs continue to grow in scale and complexity, with total assets under management up 43% year over year as of April 2026. What are their benefits, and how are regional ETF markets performing?",
+      "published": "2026-08-03",
+      "themes": [
+        "us-stocks",
+        "metals"
+      ],
+      "score": 11,
+      "points": [
+        "ETFs offer investors various benefits, including portfolio diversification, intraday liquidity and lower costs compared with mutual funds.",
+        "Total ETF assets under management (AUM) amounted to around $22.1 trillion globally as of end-April 2026.",
+        "Active ETF products continue to scale rapidly, representing more than 60% of new launches in each of the past six years."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": [
+        {
+          "file": "11-1.svg",
+          "caption": "Timeline highlighting early ETF milestones from 1990\u20132000: the first ETF launches in Canada (1990) and the U.S. (1993), Japan\u2019s first ETF (1995), Hong Kong\u2019s Tracker Fund launch (1999), and iShares STOXX Europe UCITS debuts in Frankfurt (2000)."
+        },
+        {
+          "file": "11-2.svg",
+          "caption": "Total ETF assets infographic"
+        }
+      ]
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/sme-exports.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 July 2026",
+      "title": "SME exports: Destinations, dollars and opportunities",
+      "dek": "Small and medium-sized exporters have seen a surge in foreign currency revenues.",
+      "published": "2026-07-27",
+      "themes": [
+        "usd",
+        "global"
+      ],
+      "score": 14,
+      "points": [
+        "Looking ahead, a relatively firm dollar through the end of 2026 could create headwinds for SME exporters, but a weaker dollar and improving global growth in 2027 may provide a more supportive backdrop, according to BofA Global Research."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/sme-exports.pdf",
+      "new": false,
+      "charts": [
+        {
+          "file": "12-1.png",
+          "caption": "Exhibit 1: Around a third of the value of exports was attributable to small and medium-sized enterprises (SMEs) in 2023"
+        },
+        {
+          "file": "12-2.png",
+          "caption": "Exhibit 3: Net dollar inflows have been rising due to SME transactions, according to Bank of America data"
+        },
+        {
+          "file": "12-3.png",
+          "caption": "Exhibit 6: The euro is by far the most important FX relationship"
+        }
+      ]
+    }
+  ],
+  "daily_insights": [
+    {
+      "title": "The wage growth gap has reversed",
+      "date": "2026-09-03",
+      "url": "https://institute1.bofa.com/C?q=u0wtLUJugM8"
+    },
+    {
+      "title": "Gen Z drives subscription growth, but Gen X still spends more",
+      "date": "2026-09-02",
+      "url": "https://institute1.bofa.com/C?q=!Oz9qGkrLXY"
+    },
+    {
+      "title": "Cash recovery from online betting falls short",
+      "date": "2026-09-01",
+      "url": "https://institute1.bofa.com/C?q=fem5pD0hOyE"
+    },
+    {
+      "title": "Some homeowners pick remodels over moves",
+      "date": "2026-08-31",
+      "url": "https://institute1.bofa.com/C?q=brLwC8459gw"
+    },
+    {
+      "title": "Falling rents free up budgets",
+      "date": "2026-08-28",
+      "url": "https://institute1.bofa.com/C?q=zaI!soiZmWM"
+    },
+    {
+      "title": "AI investment is elevated, but not unprecedented",
+      "date": "2026-08-27",
+      "url": "https://institute1.bofa.com/C?q=f2yuugfJnZg"
+    },
+    {
+      "title": "Higher-income buyers make up over 40% of auto demand",
+      "date": "2026-08-26",
+      "url": "https://institute1.bofa.com/C?q=xlKLN0tiGEM"
+    },
+    {
+      "title": "Younger consumers drive restaurant spending in July",
+      "date": "2026-08-25",
+      "url": "https://institute1.bofa.com/C?q=G9!LuwF6hJo"
+    },
+    {
+      "title": "Food spending shifts toward dining out",
+      "date": "2026-08-24",
+      "url": "https://institute1.bofa.com/C?q=2gig4v-mcsg"
+    },
+    {
+      "title": "Is AI raising labor productivity?",
+      "date": "2026-08-21",
+      "url": "https://institute1.bofa.com/C?q=!odKN-qL32A"
+    },
+    {
+      "title": "The \u201cK\u201d shape persists in auto demand",
+      "date": "2026-08-20",
+      "url": "https://institute1.bofa.com/C?q=WYaTPdAaUg8"
+    },
+    {
+      "title": "Small business travel spending takes off",
+      "date": "2026-08-19",
+      "url": "https://institute1.bofa.com/C?q=lGN4tEVzkj8"
+    },
+    {
+      "title": "Profit growth varies across small business sectors",
+      "date": "2026-08-18",
+      "url": "https://institute1.bofa.com/C?q=TX1vyLDEWQs"
+    },
+    {
+      "title": "Consumer financial health appears sturdy",
+      "date": "2026-08-17",
+      "url": "https://institute1.bofa.com/C?q=XJUm-Bp4Czk"
+    },
+    {
+      "title": "Wealth effects drive spending for the top 5%",
+      "date": "2026-08-14",
+      "url": "https://institute1.bofa.com/C?q=avz0Lg2uMHI"
+    },
+    {
+      "title": "New tech could broaden geothermal\u2019s geographic footprint",
+      "date": "2026-08-13",
+      "url": "https://institute1.bofa.com/C?q=chyGIeeoDA0"
+    },
+    {
+      "title": "Lower-income households have narrowed the gap in spending",
+      "date": "2026-08-12",
+      "url": "https://institute1.bofa.com/C?q=TbVfYR0Eepk"
+    },
+    {
+      "title": "Consumer spending eased in July, but remains healthy",
+      "date": "2026-08-11",
+      "url": "https://institute1.bofa.com/C?q=qNVipnEEAI0"
+    },
+    {
+      "title": "Gen Z continue to spend on travel, despite higher costs",
+      "date": "2026-08-10",
+      "url": "https://institute1.bofa.com/C?q=NvJ!ReWQTtI"
+    },
+    {
+      "title": "Social commerce leads Gen Z\u2019s gig economy activity",
+      "date": "2026-08-07",
+      "url": "https://institute1.bofa.com/C?q=G47OP4VHaYI"
+    },
+    {
+      "title": "World Cup boosts small business sales in host cities",
+      "date": "2026-08-06",
+      "url": "https://institute1.bofa.com/C?q=UelKbU1qn9I"
+    },
+    {
+      "title": "Lower-income workers lead labor market gains",
+      "date": "2026-08-05",
+      "url": "https://institute1.bofa.com/C?q=f6rm0iR-SV8"
+    },
+    {
+      "title": "Gen Z monthly savings fall short of their spending",
+      "date": "2026-08-04",
+      "url": "https://institute1.bofa.com/C?q=!fxiQvzOadU"
+    },
+    {
+      "title": "Rent-to-income ratios fall outside the Northeast and Midwest",
+      "date": "2026-08-03",
+      "url": "https://institute1.bofa.com/C?q=LXZWjKl2sPY"
+    },
+    {
+      "title": "Job switching bumps pay the most in Northeast, least in South",
+      "date": "2026-07-31",
+      "url": "https://institute1.bofa.com/C?q=66lhwrJLK4A"
+    },
+    {
+      "title": "Gas and groceries claim less income outside of New England",
+      "date": "2026-07-30",
+      "url": "https://institute1.bofa.com/C?q=7DnXhuNxiyA"
+    },
+    {
+      "title": "Tariff refunds are progressing quickly",
+      "date": "2026-07-29",
+      "url": "https://institute1.bofa.com/C?q=dTrlA4WK5oQ"
+    },
+    {
+      "title": "The share of lower-income entrepreneurs has grown",
+      "date": "2026-07-28",
+      "url": "https://institute1.bofa.com/C?q=12ZR9Ng-p7M"
+    },
+    {
+      "title": "FX flows on the rise for small and medium-sized firms",
+      "date": "2026-07-27",
+      "url": "https://institute1.bofa.com/C?q=lezhEXL5nT4"
+    },
+    {
+      "title": "Middle-income families\u2019 spending remains pivotal to GDP",
+      "date": "2026-07-24",
+      "url": "https://institute1.bofa.com/C?q=QvsEB3RrAwI"
+    }
+  ]
+}
