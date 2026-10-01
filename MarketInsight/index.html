@@ -8,7 +8,8 @@
 :root{
   --paper:#f2f3f5; --card:#ffffff; --ink:#14171c; --ink-2:#4a515c; --ink-3:#767f8c;
   --rule:#dfe2e7; --rule-2:#eceef1; --accent:#0f6e63; --accent-soft:#e2efec;
-  --jpm:#6b4f2a; --bofa:#012169; --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
+  --jpm:#6b4f2a; --bofa:#012169; --x:#5a4b86;
+  --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
   --serif:"Iowan Old Style","Charter","Palatino Linotype",Palatino,Georgia,serif;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
@@ -17,18 +18,21 @@
   :root{
     --paper:#101317; --card:#171b21; --ink:#e8eaed; --ink-2:#aab2bd; --ink-3:#7e8794;
     --rule:#272d35; --rule-2:#1f242b; --accent:#4bb3a4; --accent-soft:#16302d;
-    --jpm:#c2a578; --bofa:#8ea9df; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+    --jpm:#c2a578; --bofa:#8ea9df; --x:#b3a4dd;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
   }
 }
 :root[data-theme="dark"]{
   --paper:#101317; --card:#171b21; --ink:#e8eaed; --ink-2:#aab2bd; --ink-3:#7e8794;
   --rule:#272d35; --rule-2:#1f242b; --accent:#4bb3a4; --accent-soft:#16302d;
-  --jpm:#c2a578; --bofa:#8ea9df; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+  --jpm:#c2a578; --bofa:#8ea9df; --x:#b3a4dd;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
 }
 :root[data-theme="light"]{
   --paper:#f2f3f5; --card:#ffffff; --ink:#14171c; --ink-2:#4a515c; --ink-3:#767f8c;
   --rule:#dfe2e7; --rule-2:#eceef1; --accent:#0f6e63; --accent-soft:#e2efec;
-  --jpm:#6b4f2a; --bofa:#012169; --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
+  --jpm:#6b4f2a; --bofa:#012169; --x:#5a4b86;
+  --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
 }
 
 *{box-sizing:border-box}
@@ -107,7 +111,7 @@ article.card{background:var(--card);border:1px solid var(--rule);border-radius:4
 .new{font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:10px;
      color:var(--paper);background:var(--accent);border-radius:2px;padding:2px 6px}
 article.card.is-new{border-left:2px solid var(--accent)}
-.src.jpm{color:var(--jpm)} .src.bofa{color:var(--bofa)}
+.src.jpm{color:var(--jpm)} .src.bofa{color:var(--bofa)} .src.x{color:var(--x)}
 .sep{color:var(--rule)}
 .card h3{font-family:var(--serif);font-size:22px;line-height:1.22;font-weight:600;
          margin:0 0 10px;letter-spacing:-.01em;text-wrap:balance}
@@ -177,7 +181,7 @@ footer a{color:var(--accent)}
   <p class="standfirst">One edition a week, built from J.P. Morgan Global Research and the
     Bank of America Institute. The newest is at the top.</p>
 </header>
-<ul class="arch"><li class="yr"><h2>2026</h2></li><li><a href="reports/2026/2026-09-28/index.html"><time datetime="2026-09-28">28 September 2026</time><span>10 notes · 17 charts</span></a></li><li><a href="reports/2026/2026-09-21/index.html"><time datetime="2026-09-21">21 September 2026</time><span>12 notes · 20 charts</span></a></li><li><a href="reports/2026/2026-09-14/index.html"><time datetime="2026-09-14">14 September 2026</time><span>11 notes · 18 charts</span></a></li><li><a href="reports/2026/2026-09-07/index.html"><time datetime="2026-09-07">7 September 2026</time><span>12 notes · 22 charts</span></a></li><li><a href="reports/2026/2026-08-31/index.html"><time datetime="2026-08-31">31 August 2026</time><span>9 notes · 15 charts</span></a></li><li><a href="reports/2026/2026-08-24/index.html"><time datetime="2026-08-24">24 August 2026</time><span>10 notes · 17 charts</span></a></li><li><a href="reports/2026/2026-08-17/index.html"><time datetime="2026-08-17">17 August 2026</time><span>9 notes · 17 charts</span></a></li><li><a href="reports/2026/2026-08-11/index.html"><time datetime="2026-08-11">11 August 2026</time><span>10 notes · 20 charts</span></a></li><li><a href="reports/2026/2026-07-29/index.html"><time datetime="2026-07-29">29 July 2026</time><span>11 notes · 17 charts</span></a></li></ul>
+<ul class="arch"><li class="yr"><h2>2026</h2></li><li><a href="reports/2026/2026-10-01/index.html"><time datetime="2026-10-01">1 October 2026</time><span>19 notes · 25 charts</span></a></li><li><a href="reports/2026/2026-09-28/index.html"><time datetime="2026-09-28">28 September 2026</time><span>10 notes · 17 charts</span></a></li><li><a href="reports/2026/2026-09-21/index.html"><time datetime="2026-09-21">21 September 2026</time><span>12 notes · 20 charts</span></a></li><li><a href="reports/2026/2026-09-14/index.html"><time datetime="2026-09-14">14 September 2026</time><span>11 notes · 18 charts</span></a></li><li><a href="reports/2026/2026-09-07/index.html"><time datetime="2026-09-07">7 September 2026</time><span>12 notes · 22 charts</span></a></li><li><a href="reports/2026/2026-08-31/index.html"><time datetime="2026-08-31">31 August 2026</time><span>9 notes · 15 charts</span></a></li><li><a href="reports/2026/2026-08-24/index.html"><time datetime="2026-08-24">24 August 2026</time><span>10 notes · 17 charts</span></a></li><li><a href="reports/2026/2026-08-17/index.html"><time datetime="2026-08-17">17 August 2026</time><span>9 notes · 17 charts</span></a></li><li><a href="reports/2026/2026-08-11/index.html"><time datetime="2026-08-11">11 August 2026</time><span>10 notes · 20 charts</span></a></li><li><a href="reports/2026/2026-07-29/index.html"><time datetime="2026-07-29">29 July 2026</time><span>11 notes · 17 charts</span></a></li></ul>
 
 </div>
 </body>

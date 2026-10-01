@@ -106,6 +106,13 @@ POLITE_DELAY = 0.4                                      # between network reques
 INLINE_BUDGET = 4_600_000                               # base64 bytes of chart data in one page
 MAX_CHARTS_PER_ARTICLE = 3
 
+# The figure formats an edition can hold. The two desks publish SVG and PNG;
+# X serves JPEG as well, and a JPEG filed as .png would come back from
+# load_edition labelled image/png and inlined under the wrong mime.
+CHART_EXT = {"image/svg+xml": ".svg", "image/png": ".png", "image/jpeg": ".jpg"}
+CHART_MIME = {ext: mime for mime, ext in CHART_EXT.items()}
+CHART_MIME[".jpeg"] = "image/jpeg"
+
 
 # ------------------------------------------------------------------- themes
 
@@ -223,6 +230,7 @@ class Article:
     charts: list[Chart] = field(default_factory=list)
     pdf_url: str = ""
     is_new: bool = False                                # absent from the previous edition
+    x_tokens: list[str] = field(default_factory=list)   # post/figure ids to retire, X only
 
     @property
     def primary(self) -> str:
@@ -411,7 +419,8 @@ def key_points(soup: BeautifulSoup, limit: int = 4) -> list[str]:
     return out
 
 
-def classify(article: Article, haystacks: dict[str, str]) -> None:
+def classify(article: Article, haystacks: dict[str, str],
+             floor: int = ARTICLE_FLOOR) -> None:
     """Score an article against every theme and keep the ones it clears.
 
     Where a term appears matters more than how often: a word in the headline or
@@ -442,7 +451,9 @@ def classify(article: Article, haystacks: dict[str, str]) -> None:
 
     article.themes = sorted(kept, key=lambda t: (-kept[t], THEME_ORDER.index(t)))
     article.score = top
-    if top < ARTICLE_FLOOR:
+    # The bar to appear at all, which is higher than the bar to belong to a
+    # subject. Callers that deal in shorter text lower it — see X_FLOOR.
+    if top < floor:
         article.themes = []
 
 
@@ -763,6 +774,195 @@ def parse_bofa(url: str, lastmod: date, listing: dict, fetch: Fetcher) -> Articl
     return art
 
 
+# ------------------------------------------------------------------ X charts
+
+# The six desks followed on X. Timelines there are behind an auth wall and
+# render in the browser, so this file cannot discover posts the way it walks a
+# sitemap — a browser-assisted collector writes X_INBOX and this reads it. The
+# figures themselves need no login: pbs.twimg.com serves them to anyone, which
+# is why the inbox carries media keys rather than image bytes and the fetch
+# below is an ordinary cached GET like every other in this file.
+X_INBOX = HERE / "x_inbox.json"
+X_SEEN = HERE / "x_seen.json"
+X_MEDIA = "https://pbs.twimg.com/media/{key}?format={fmt}&name=large"
+MAX_CHARTS_PER_POST = 2
+X_PER_THEME = 3                                         # posts kept per subject
+
+# A post is terse by construction: a sentence and a chart, where a research
+# note has nine paragraphs. Scored against the same vocabulary it would almost
+# never reach ARTICLE_FLOOR, so the bar for a post is the theme floor it has
+# already cleared — the gap between the two exists to keep the Institute's
+# consumer-lifestyle research out of the brief, and none of these accounts
+# publishes that.
+X_FLOOR = THEME_FLOOR
+
+
+def x_ledger() -> dict[str, str]:
+    """Which posts and figures have already been printed, and in which edition.
+
+    A weekly brief drawn from accounts that post daily would otherwise repeat
+    itself: the recency window is wider than the gap between runs, and a chart
+    that was the headline last Monday is still in the window this Monday. Notes
+    from the two desks are allowed to carry over and are marked New or not —
+    that is the standing picture, and dropping it would lose the context. A
+    chart is different. Printing the same figure twice says nothing the second
+    time, so a post that has been used is spent.
+    """
+    if not X_SEEN.exists():
+        return {}
+    try:
+        return json.loads(X_SEEN.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return {}
+
+
+def remember_x(articles: list[Article], day: date) -> None:
+    """Retire every post and figure this edition used."""
+    seen = x_ledger()
+    stamp = day.isoformat()
+    for art in articles:
+        for token in art.x_tokens:
+            seen.setdefault(token, stamp)
+    X_SEEN.write_text(json.dumps(seen, indent=2, sort_keys=True), encoding="utf-8")
+
+
+def x_split(text: str) -> tuple[str, str]:
+    """A headline and a standfirst out of a post that was written as neither.
+
+    The post is all there is — there is no separate title to lift — so the
+    first sentence becomes the headline and whatever follows becomes the dek.
+    Printing the whole post again underneath a headline cut from its own front
+    only says it twice.
+    """
+    body = tidy(text)
+    # Leading cashtags and hashtags are the filing label, not the sentence.
+    body = re.sub(r"^(?:[$#]\w+[\s,.]*)+", "", body).strip()
+    body = re.sub(r"\s*https?://\S+", "", body).strip()
+    # Most of these posts are a quoted passage followed by the account's own
+    # line about it. Dropping the opening quote mark without its partner
+    # leaves the close stranded mid-sentence, so both go or neither does.
+    if body[:1] in ('"', "“"):
+        body = re.sub(r'["”]', "", body, count=2).strip()
+    # First sentence, where "sentence" has to mean something: splitting on
+    # every full stop turns "Facts vs. Feelings: Brent near $108" into "Facts
+    # vs." A break is only a break if it leaves a headline behind it.
+    head, rest = body, ""
+    for hit in re.finditer(r"(?<=[.!?])\s+(?=[\"\u201c$#(]*[A-Z0-9])", body):
+        if hit.start() >= 30:
+            head, rest = body[:hit.start()], body[hit.end():]
+            break
+    # A post can be one long sentence with no break to find — these accounts
+    # write "The Tech x Energy barbell is chugging along: <the whole chart>".
+    # The colon is doing a headline's work there, so let it.
+    if len(head) > 110:
+        colon = re.search(r":\s+", head)
+        if colon and 25 <= colon.start() <= 110:
+            head, rest = head[:colon.start()], head[colon.end():] + (
+                " " + rest if rest else "")
+    if len(head) > 110:
+        # Still no break to be had. Cut short, the headline no longer carries
+        # its own sentence, so the dek says the post in full instead.
+        return head[:107].rsplit(" ", 1)[0] + "…", body
+    return (head.rstrip(" .") or tidy(text)[:110]), rest
+
+
+def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Article]:
+    """Posts from the followed accounts that still have something to say.
+
+    Everything already spent is dropped before a single image is fetched, so a
+    run that has nothing new costs nothing.
+    """
+    if not X_INBOX.exists():
+        if verbose:
+            print("X: no x_inbox.json — run collect_x.py to gather posts", file=sys.stderr)
+        return []
+    try:
+        blob = json.loads(X_INBOX.read_text(encoding="utf-8"))
+    except (json.JSONDecodeError, OSError) as exc:
+        print(f"X: {X_INBOX.name} is unreadable ({exc})", file=sys.stderr)
+        return []
+
+    cutoff = date.today() - timedelta(days=days)
+    # Running twice in a day rebuilds that day's edition in place, so what the
+    # earlier run retired against today is not spent — it is this edition's own
+    # content, and holding it back would empty the page on the second run.
+    today = date.today().isoformat()
+    seen = {k: v for k, v in x_ledger().items() if v != today}
+    out: list[Article] = []
+    skipped = 0
+
+    for post in blob.get("posts", []):
+        pid = str(post.get("id", "")).strip()
+        handle = post.get("handle", "").lstrip("@")
+        if not pid or not handle:
+            continue
+        try:
+            published = date.fromisoformat(str(post.get("ts", ""))[:10])
+        except ValueError:
+            continue
+        if published < cutoff:
+            continue
+        if f"post:{pid}" in seen:
+            skipped += 1
+            continue
+
+        # A figure can be reposted under a new id — by the same account a week
+        # later, or by two of these accounts on the same day, since several of
+        # them republish the same desk research. The media key is the figure
+        # itself, so it is what settles whether this is a repeat.
+        media = [m for m in post.get("media", [])
+                 if f"media:{m.get('key')}" not in seen][:MAX_CHARTS_PER_POST]
+        if not media and post.get("media"):
+            skipped += 1
+            continue
+
+        text = tidy(post.get("text", ""))
+        if not text:
+            continue
+
+        title, dek = x_split(text)
+        art = Article(
+            url=post.get("url") or f"https://x.com/{handle}/status/{pid}",
+            source=f"@{handle}",
+            section=post.get("name") or handle,
+            title=title,
+            dek=dek,
+            published=published,
+        )
+        # Scored against the same vocabulary as a research note, but at the
+        # floor a post can actually reach — see X_FLOOR. The text serves as
+        # both headline and body: there is no ninth paragraph to discount.
+        classify(art, {"title": art.title.lower(), "url": "",
+                       "dek": art.dek.lower(), "keywords": "", "body": text.lower()},
+                 floor=X_FLOOR)
+        if not art.themes:
+            continue
+
+        tokens = [f"post:{pid}"]
+        for item in media:
+            key, fmt = item.get("key", ""), item.get("fmt", "jpg")
+            if not key:
+                continue
+            raw = fetch.get(X_MEDIA.format(key=key, fmt=fmt))
+            if not raw:
+                continue
+            mime = "image/png" if fmt == "png" else "image/jpeg"
+            art.charts.append(Chart(caption=f"{art.section} · "
+                                            f"{published.strftime('%d %b %Y').lstrip('0')}",
+                                    mime=mime, data=raw))
+            tokens.append(f"media:{key}")
+
+        art.x_tokens = tokens
+        out.append(art)
+        if verbose:
+            print(f"  + {published} [{art.score:2d}] {len(art.charts)} charts  "
+                  f"@{handle}: {art.title[:52]}", file=sys.stderr)
+
+    if verbose:
+        print(f"X: {len(out)} fresh, {skipped} already used", file=sys.stderr)
+    return out
+
+
 # ---------------------------------------------------------------- selection
 
 def gather(fetch: Fetcher, days: int, per_theme: int, verbose: bool = True) -> tuple[list[Article], list[dict]]:
@@ -798,6 +998,8 @@ def gather(fetch: Fetcher, days: int, per_theme: int, verbose: bool = True) -> t
                 print(f"  + {art.published} [{art.score:2d}] {len(art.charts)} charts  {art.title[:64]}",
                       file=sys.stderr)
 
+    posts = parse_x_posts(fetch, days, verbose=verbose)
+
     # Each theme gets its freshest few. Taking the top N overall would let a
     # busy week of macro copy crowd out the only oil note in the window, so
     # selection runs per theme — and within a theme, a note actually filed
@@ -820,6 +1022,17 @@ def gather(fetch: Fetcher, days: int, per_theme: int, verbose: bool = True) -> t
                 if other:
                     picks.append(other)
         for art in picks:
+            chosen.setdefault(art.url, art)
+
+    # Posts are selected on their own rather than thrown into the ranking
+    # above. A post always outranks a note on recency — these accounts publish
+    # within the hour, the desks within the month — so a shared ranking would
+    # hand every subject to X and bury the research the brief is built on.
+    for theme in THEME_ORDER:
+        ranked = sorted((a for a in posts if theme in a.themes),
+                        key=lambda a: (a.themes[0] == theme, len(a.charts), a.published, a.score),
+                        reverse=True)
+        for art in ranked[:X_PER_THEME]:
             chosen.setdefault(art.url, art)
 
     picked = sorted(chosen.values(), key=lambda a: (a.published, a.score), reverse=True)
@@ -851,7 +1064,8 @@ CSS = """
 :root{
   --paper:#f2f3f5; --card:#ffffff; --ink:#14171c; --ink-2:#4a515c; --ink-3:#767f8c;
   --rule:#dfe2e7; --rule-2:#eceef1; --accent:#0f6e63; --accent-soft:#e2efec;
-  --jpm:#6b4f2a; --bofa:#012169; --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
+  --jpm:#6b4f2a; --bofa:#012169; --x:#5a4b86;
+  --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
   --serif:"Iowan Old Style","Charter","Palatino Linotype",Palatino,Georgia,serif;
   --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   --mono:ui-monospace,"SF Mono",Menlo,Consolas,"Liberation Mono",monospace;
@@ -860,18 +1074,21 @@ CSS = """
   :root{
     --paper:#101317; --card:#171b21; --ink:#e8eaed; --ink-2:#aab2bd; --ink-3:#7e8794;
     --rule:#272d35; --rule-2:#1f242b; --accent:#4bb3a4; --accent-soft:#16302d;
-    --jpm:#c2a578; --bofa:#8ea9df; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+    --jpm:#c2a578; --bofa:#8ea9df; --x:#b3a4dd;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
   }
 }
 :root[data-theme="dark"]{
   --paper:#101317; --card:#171b21; --ink:#e8eaed; --ink-2:#aab2bd; --ink-3:#7e8794;
   --rule:#272d35; --rule-2:#1f242b; --accent:#4bb3a4; --accent-soft:#16302d;
-  --jpm:#c2a578; --bofa:#8ea9df; --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
+  --jpm:#c2a578; --bofa:#8ea9df; --x:#b3a4dd;
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 8px 24px rgba(0,0,0,.3);
 }
 :root[data-theme="light"]{
   --paper:#f2f3f5; --card:#ffffff; --ink:#14171c; --ink-2:#4a515c; --ink-3:#767f8c;
   --rule:#dfe2e7; --rule-2:#eceef1; --accent:#0f6e63; --accent-soft:#e2efec;
-  --jpm:#6b4f2a; --bofa:#012169; --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
+  --jpm:#6b4f2a; --bofa:#012169; --x:#5a4b86;
+  --shadow:0 1px 2px rgba(20,23,28,.06),0 8px 24px rgba(20,23,28,.05);
 }
 
 *{box-sizing:border-box}
@@ -950,7 +1167,7 @@ article.card{background:var(--card);border:1px solid var(--rule);border-radius:4
 .new{font-weight:700;letter-spacing:.08em;text-transform:uppercase;font-size:10px;
      color:var(--paper);background:var(--accent);border-radius:2px;padding:2px 6px}
 article.card.is-new{border-left:2px solid var(--accent)}
-.src.jpm{color:var(--jpm)} .src.bofa{color:var(--bofa)}
+.src.jpm{color:var(--jpm)} .src.bofa{color:var(--bofa)} .src.x{color:var(--x)}
 .sep{color:var(--rule)}
 .card h3{font-family:var(--serif);font-size:22px;line-height:1.22;font-weight:600;
          margin:0 0 10px;letter-spacing:-.01em;text-wrap:balance}
@@ -1073,10 +1290,14 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
             tags = "".join(
                 f'<span class="tag"><span class="dot" style="background:{THEMES[t]["dot"]}"></span>'
                 f'{esc(THEMES[t]["label"])}</span>' for t in art.themes)
-            cls = "jpm" if art.source == "J.P. Morgan" else "bofa"
+            cls = ("jpm" if art.source == "J.P. Morgan"
+                   else "x" if art.source.startswith("@") else "bofa")
             pdf = (f'<span class="sep">·</span><a href="{esc(art.pdf_url)}">full analysis (PDF)</a>'
                    if art.pdf_url else "")
             flag = '<span class="new">New</span>' if art.is_new else ""
+            # A post spent entirely on its headline has nothing left to stand
+            # under it, and an empty paragraph would still take up the space.
+            dek = f'<p class="dek">{esc(art.dek)}</p>' if art.dek else ""
 
             cards.append(
                 f'<article class="card{" is-new" if art.is_new else ""}" '
@@ -1086,7 +1307,7 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
                 f'<span class="sep">·</span><time datetime="{art.published.isoformat()}">'
                 f'{esc(art.published.strftime("%d %b %Y").lstrip("0"))}</time>{pdf}</div>'
                 f'<h3><a href="{esc(art.url)}">{esc(art.title)}</a></h3>'
-                f'<p class="dek">{esc(art.dek)}</p>'
+                f'{dek}'
                 f'{points}'
                 f'<div class="tags">{tags}</div>'
                 f'{gallery}'
@@ -1144,8 +1365,9 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
   <p class="kicker">Market Insight · Weekly Brief</p>
   <h1>What the research desks are saying this week</h1>
   <p class="standfirst">The public research from J.P. Morgan Global Research and the Bank of
-    America Institute, filtered to the US stock market, US macroeconomics, the dollar, oil,
-    metals and global markets — with every chart lifted from the source document.</p>
+    America Institute, and the charts the research desks post on X, filtered to the US stock
+    market, US macroeconomics, the dollar, oil, metals and global markets — with every figure
+    lifted from the source.</p>
   <div class="meta-row">
     <span><strong>{esc(long_day)}</strong></span>
     <span>{len(articles)} notes</span>
@@ -1169,7 +1391,9 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
     <footer>
       <p>Assembled automatically from the public pages of
       <a href="https://www.jpmorgan.com/global">jpmorgan.com</a> and
-      <a href="https://institute.bankofamerica.com/">institute.bankofamerica.com</a>.
+      <a href="https://institute.bankofamerica.com/">institute.bankofamerica.com</a>,
+      and from the public posts of the research accounts followed on
+      <a href="https://x.com/">X</a>.
       Headlines, summaries and charts belong to their publishers and are reproduced here for
       reference; follow any headline to read the note in full. Nothing here is investment advice.</p>
     </footer>
@@ -1379,7 +1603,7 @@ def load_edition(day: str) -> Edition | None:
             path = folder / "assets" / chart["file"]
             if not path.exists():
                 continue
-            mime = "image/svg+xml" if path.suffix.lower() == ".svg" else "image/png"
+            mime = CHART_MIME.get(path.suffix.lower(), "image/png")
             charts.append(Chart(caption=chart["caption"], mime=mime, data=path.read_bytes()))
         articles.append(Article(
             url=record["url"], source=record["source"], section=record["section"],
@@ -1440,7 +1664,7 @@ def write_report(edition: Edition) -> Path:
     for i, art in enumerate(articles, 1):
         names = []
         for j, chart in enumerate(art.charts, 1):
-            ext = ".svg" if "svg" in chart.mime else ".png"
+            ext = CHART_EXT.get(chart.mime, ".png")
             name = f"{i:02d}-{j}{ext}"
             (assets / name).write_bytes(chart.data)
             names.append(name)
@@ -1540,6 +1764,9 @@ def main() -> int:
     edition = Edition(day=today, articles=articles, daily=daily, previous=previous)
 
     page = write_report(edition)
+    # Only once the edition is on disk: a post retired against a run that then
+    # failed to write would be lost from every future brief.
+    remember_x(articles, today)
     charts = sum(len(a.charts) for a in articles)
     size = page.stat().st_size / 1_000_000
     fresh = (f" · {edition.fresh} new since {previous}" if previous else "")

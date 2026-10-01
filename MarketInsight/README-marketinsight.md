@@ -1,9 +1,10 @@
 # Market Insight
 
 A dated brief built from the public research of **J.P. Morgan Global Research**
-and the **Bank of America Institute**, filtered to six subjects — the US stock
-market, US macroeconomics, the US dollar, oil, metals and global markets — with
-the charts lifted out of the source documents.
+and the **Bank of America Institute**, and from the charts a handful of research
+desks post on **X**, filtered to six subjects — the US stock market, US
+macroeconomics, the US dollar, oil, metals and global markets — with the figures
+lifted out of the source.
 
 ```
 python market_insight.py                 # build today's brief
@@ -29,6 +30,8 @@ reports/2026/2026-07-29/
     artifact.html                   the same page without the outer document
     report.json                     the same thing as data
     assets/                         each chart as a file, if you want to reuse one
+x_inbox.json                        posts collected from X, waiting to be used
+x_seen.json                         every X post and figure already printed
 ```
 
 Editions are filed under their year. Both the folder and the page's own **Log**
@@ -98,6 +101,13 @@ scheduled version went unnoticed for a fortnight. A missed Monday leaves no
 trace of its own either — the job was not there to complain — so the next run
 that works reports the gap.
 
+The X step is not part of this. Collecting posts needs a signed-in browser, so
+the weekly job cannot do it unattended — it builds from whatever `x_inbox.json`
+is already on disk. Refresh the inbox before the run and that Monday's brief
+carries the week's charts; leave it and the brief is the two desks only, which
+is a quieter page but not a broken one. Nothing in the automated path depends on
+reaching X.
+
 The job refuses to commit a bad scrape. Fewer than three notes, or no charts at
 all, and it logs the failure and stops — a broken scrape ends with `nothing
 matched`, which on the page is indistinguishable from a quiet week, and a
@@ -150,6 +160,103 @@ Captions wrap across lines, and the wrap is found by font: the Institute sets
 captions in a bold cut and the chart's subtitle in a light one, so the caption
 is the run of lines sharing the first line's face. The bold *flag* is not usable
 for this — several of these templates mark neither line as bold.
+
+## The X accounts
+
+Six research accounts are read alongside the two desks:
+
+| account | what it publishes |
+| --- | --- |
+| `@NautilusCap` | seasonal composites for indices and single names |
+| `@RenMacLLC` | Renaissance Macro's own cuts of the macro releases |
+| `@SubuTrade` | systematic equity studies |
+| `@CarsonResearch` | the *Facts vs. Feelings* podcast, data points in the post |
+| `@dailychartbook` | the day's best charts from across the sell side |
+| `@Bluekurtic` | breadth and seasonality studies |
+
+They matter because they are quick in a way a research note is not: a chart of
+Tuesday's PCE print appears on Tuesday, while the desk's note on it lands a
+fortnight later, if at all. Several of them are also a window onto desks that
+publish nothing free of their own — Strategas, NDR, Deutsche Bank — because
+`@dailychartbook` reposts those exhibits with attribution.
+
+### Why there is a collector
+
+The rest of this program discovers its material by walking a sitemap and
+fetching pages. That does not work on X: a profile timeline is behind an auth
+wall and renders in the browser, so an anonymous GET returns a shell with no
+posts in it. A browser signed in as the reader is the only way to see them.
+
+So collection is split in two, along the line of what actually needs the login:
+
+- **The post metadata** — id, timestamp, text, and the key of each figure —
+  comes from a browser-assisted pass over the six timelines, which writes
+  `x_inbox.json`.
+- **The figures themselves** need no login at all. `pbs.twimg.com` serves them
+  to anyone, so the build fetches them like every other chart in this file,
+  through the same cached, rate-limited `Fetcher`.
+
+This is why the inbox carries media *keys* rather than image bytes, and why the
+build still works unattended: given an inbox, `market_insight.py` needs nothing
+from X that an ordinary HTTP client cannot get. Without one it prints a line
+saying so and builds the brief from the two desks alone — a missing inbox is a
+quiet week on X, not a failure.
+
+`x_inbox.json` is not in version control. It is a staging area rather than a
+record: what was actually printed is in the edition, and what has been spent is
+in `x_seen.json`.
+
+### Nothing is printed twice
+
+`x_seen.json` is the ledger, and it is committed, because it is the only thing
+standing between a weekly brief and a great deal of repetition. The recency
+window is far wider than the gap between runs, so a chart that led last Monday
+is still well inside the window this Monday.
+
+Notes from the two desks are *allowed* to carry over — that standing picture is
+the point of the page, and each note is marked **New** or not. A chart is
+different. Printing the same figure a second time says nothing it did not say
+the first, so **a post that has been used is spent** and will not come back.
+
+Two things are retired, not one:
+
+- `post:<id>` — the post itself.
+- `media:<key>` — the figure. A chart gets reposted: by the same account a week
+  later, or by two of these accounts on the same day, since several of them
+  republish the same sell-side exhibit. The media key *is* the figure, so it is
+  what settles whether something is a repeat, whatever post it arrives in.
+
+Only what an edition actually printed is retired. A post that was collected but
+crowded out of its subject stays in the inbox and is a candidate again next
+week, so a busy Monday does not burn a fortnight of material. And retirement
+happens *after* the edition is safely on disk — a post spent against a run that
+then failed to write would be lost from every future brief.
+
+Running twice in a day rebuilds that day's edition in place, so the ledger
+ignores its own entries for the day being built. Without that, the second run
+of a day would find everything spent and publish a page with no charts on it.
+
+### Scoring a post
+
+Posts are scored against the same six-subject vocabulary as a research note,
+but not at the same threshold. A post is terse by construction — a sentence and
+a chart, where a note has nine paragraphs — and would almost never reach the
+score a note has to. The bar for a post is therefore the theme floor it has
+already cleared. The gap between the two floors exists to keep the Institute's
+consumer-lifestyle research out of the brief, and none of these accounts
+publishes that.
+
+Posts are also selected separately from the notes, rather than thrown into one
+ranking. A post always outranks a note on recency — these accounts publish
+within the hour, the desks within the month — so a shared ranking would hand
+every subject to X and bury the research the brief is built on. Each subject
+takes its three best posts and no more.
+
+A post has no headline, because nobody wrote one: the first sentence becomes
+the headline and the rest becomes the standfirst. Where there is no sentence to
+break on, a colon will do — these accounts write *"The Tech x Energy barbell is
+chugging along: …"* — and where there is neither, the headline is cut short and
+the standfirst carries the post in full.
 
 ## How notes are chosen
 
@@ -231,7 +338,17 @@ July brief.
 - **Keyword scoring is not comprehension.** It is tuned against what these two
   desks actually publish and will need revisiting if either changes its house
   style. `--days` and `--per-theme` are the dials.
+- **X needs a browser.** The build itself is unattended, but the inbox it reads
+  is not — see *The X accounts*. An account can also simply go quiet, and a
+  quiet account is indistinguishable from a collection that failed: on
+  1 October 2026 `@SubuTrade` had not posted since 16 April. The collector
+  records a note per account when it finds nothing, so a silent week says which
+  it was.
+- **Charts are reproduced, not interpreted.** A figure posted to X carries
+  whatever its original publisher put on it, and several arrive second-hand —
+  `@dailychartbook` reposting a Strategas or NDR exhibit. The post is linked so
+  the chain is followable, but the brief does not check the underlying data.
 
 Headlines, summaries and charts belong to their publishers and are reproduced
-for reference, each linked back to the note it came from. Nothing here is
+for reference, each linked back to the note or post it came from. Nothing here is
 investment advice.

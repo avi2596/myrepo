@@ -13,3 +13,10 @@
 reports/*/*/index.html
 reports/*/*/artifact.html
 index-artifact.html
+
+# Posts collected from X, pending use. Written by the browser-assisted
+# collector, consumed by the build — the figures themselves are fetched from
+# pbs.twimg.com at build time and land in assets/ like any other chart. Kept
+# out of version control because it is a staging area, not a record: what was
+# actually printed is in the edition, and what has been spent is in x_seen.json.
+x_inbox.json
