@@ -45,6 +45,7 @@ from __future__ import annotations
 import argparse
 import base64
 import hashlib
+import io
 import json
 import re
 import sys
@@ -62,6 +63,14 @@ try:
     import pymupdf
 except ImportError:                                     # pragma: no cover
     pymupdf = None
+
+try:
+    from PIL import Image
+except ImportError:                                     # pragma: no cover
+    # Only the perceptual fingerprint needs it. Without Pillow a chart that is
+    # re-encoded on its way to a second upload can slip through as new; the
+    # other four dedup tokens still apply.
+    Image = None
 
 HERE = Path(__file__).resolve().parent
 REPORTS = HERE / "reports"
@@ -211,6 +220,10 @@ class Chart:
     caption: str
     mime: str
     data: bytes = field(repr=False, default=b"")
+    # What retires this figure if it is printed. Held on the chart rather than
+    # on the article so that dropping a chart drops its claim on the ledger
+    # with it — see remember_printed.
+    tokens: list[str] = field(default_factory=list)
 
     def data_uri(self) -> str:
         return f"data:{self.mime};base64," + base64.b64encode(self.data).decode()
@@ -798,15 +811,32 @@ X_FLOOR = THEME_FLOOR
 
 
 def x_ledger() -> dict[str, str]:
-    """Which posts and figures have already been printed, and in which edition.
+    """Every post, figure and claim already printed, and in which edition.
 
     A weekly brief drawn from accounts that post daily would otherwise repeat
     itself: the recency window is wider than the gap between runs, and a chart
-    that was the headline last Monday is still in the window this Monday. Notes
-    from the two desks are allowed to carry over and are marked New or not —
-    that is the standing picture, and dropping it would lose the context. A
-    chart is different. Printing the same figure twice says nothing the second
-    time, so a post that has been used is spent.
+    that led last Monday is still in the window this Monday. Notes from the two
+    desks are allowed to carry over and are marked New or not — that standing
+    picture is the point of the page. A chart is different. Printing the same
+    figure twice says nothing the second time, so what has been used is spent.
+
+    Five kinds of token are retired, because a repeat arrives in five disguises:
+
+        post:<id>       the post itself, reposted or re-collected
+        media:<key>     X's own id for an upload, shared by a quote-repost
+        sha:<digest>    the exact bytes, when one upload is re-served under a
+                        second key
+        phash:<hex>     the picture, when the same chart is re-encoded, rescaled
+                        or re-cropped on its way to a second upload and so
+                        shares neither key nor bytes
+        text:<words>    the claim, when two accounts report one number in
+                        different words, or an account restates its own chart
+                        in a weekly round-up
+
+    The first three are exact lookups. A re-encoded chart and a reworded
+    sentence are never bit-identical to what they repeat, so the last two are
+    compared by similarity instead — the picture by Hamming distance between
+    its hashes, the claim by how many content words two posts share.
     """
     if not X_SEEN.exists():
         return {}
@@ -816,13 +846,198 @@ def x_ledger() -> dict[str, str]:
         return {}
 
 
-def remember_x(articles: list[Article], day: date) -> None:
-    """Retire every post and figure this edition used."""
-    seen = x_ledger()
+# How close two figures have to look before the second one is a repeat. A
+# re-encode at half scale and quality 35 moves the hash by about a bit, while
+# two different charts sit 30 bits apart, so the gap is wide and 6 sits in it.
+PHASH_DISTANCE = 6
+
+# How much of a claim two posts have to share before the second says nothing
+# new. Measured on content words: the same number reported in different words
+# overlaps a little over half, two unrelated posts almost nothing, so 0.45 is
+# clear of both.
+CLAIM_OVERLAP = 0.45
+
+
+def bits_apart(a: str, b: str) -> int:
+    """Hamming distance between two hex fingerprints."""
+    try:
+        return bin(int(a, 16) ^ int(b, 16)).count("1")
+    except ValueError:
+        return 64
+
+
+def near(seen: dict, kind: str, value: str, limit: int) -> bool:
+    """Has something within `limit` bits of this fingerprint been printed?"""
+    prefix = kind + ":"
+    return any(bits_apart(key[len(prefix):], value) <= limit
+               for key in seen if key.startswith(prefix))
+
+
+def phash(raw: bytes) -> str:
+    """A difference hash of a figure: what the chart looks like, not its bytes.
+
+    The same exhibit reaches two of these accounts as two different files —
+    re-encoded, rescaled, sometimes re-cropped — so bytes and media keys both
+    miss it. Downscaling to 9x8 greyscale and recording which way the
+    brightness steps between neighbouring pixels throws away everything that
+    re-encoding changes and keeps the shape of the plot, which is what makes it
+    the same chart.
+    """
+    if Image is None:
+        return ""
+    try:
+        with Image.open(io.BytesIO(raw)) as img:
+            small = img.convert("L").resize((9, 8), Image.Resampling.LANCZOS)
+            # getdata() is deprecated in Pillow 13 and gone in 14; the
+            # replacement does not exist before it, so take whichever is there.
+            reader = getattr(small, "get_flattened_data", None) or small.getdata
+            px = list(reader())
+    except Exception:
+        # A figure that will not decode is still worth printing; it simply
+        # cannot be fingerprinted this way, and the other tokens still apply.
+        return ""
+    bits = 0
+    for row in range(8):
+        for col in range(8):
+            left, right = px[row * 9 + col], px[row * 9 + col + 1]
+            bits = (bits << 1) | (1 if left > right else 0)
+    return f"{bits:016x}"
+
+
+# Words that carry no claim. Dropping them stops two unrelated posts matching
+# on nothing but their scaffolding.
+STOPWORDS = frozenset("""a an and are as at be been but by for from has have in
+into is it its of on or that the this to was were will with we our you your
+they their he she has had not no than then there here what which who when
+how all any can could would should may might just about over under""".split())
+
+
+def claim_signature(text: str) -> str:
+    """The content words of a post, as a signature two posts can be compared on.
+
+    Two of these accounts reporting one PCE print write different sentences
+    about the same number, and an account's weekly round-up restates charts it
+    already posted. Neither is caught by hashing the text, which changes
+    completely when a word does — so what is stored is the *set* of words that
+    carry the claim, and two posts are compared by how much of it they share.
+
+    Each word is kept as a short hash rather than as itself: the ledger is a
+    record of what has been printed, not a readable copy of it, and this keeps
+    an entry to a line.
+    """
+    words = [w for w in re.findall(r"[a-z0-9.%$]+", text.lower())
+             if w not in STOPWORDS and len(w) > 1]
+    if len(words) < 4:
+        return ""
+    # Capped so one long post cannot overlap everything by sheer surface area.
+    return ".".join(sorted({hashlib.sha1(w.encode()).hexdigest()[:4]
+                            for w in words})[:24])
+
+
+def claim_made(seen: dict, signature: str) -> bool:
+    """Has this much of this claim already been printed?"""
+    mine = set(signature.split("."))
+    for key in seen:
+        if not key.startswith("text:"):
+            continue
+        theirs = set(key[5:].split("."))
+        union = mine | theirs
+        if union and len(mine & theirs) / len(union) >= CLAIM_OVERLAP:
+            return True
+    return False
+
+
+def rebuild_ledger() -> tuple[int, int]:
+    """Reconstruct the ledger from the editions themselves.
+
+    The editions are the record of what was printed; the ledger is only a
+    convenience kept alongside them, and anything kept alongside can drift. It
+    did: rebuilding one day's edition three times left the ledger holding the
+    union of all three runs' picks, so six posts were retired having never
+    appeared on a page. Deriving the ledger from the archive rather than
+    accumulating it makes that class of drift answerable — whatever the ledger
+    claims can be checked against, and replaced by, what the pages actually
+    show.
+
+    Worth running after a ledger is lost, after editing an edition by hand, or
+    simply to confirm the two still agree:
+
+        python market_insight.py --reindex
+
+    Media keys are not restored, because an edition does not keep them and does
+    not need to: the figure's bytes and its appearance are both recorded, and
+    either catches a repeat that the key would have caught.
+    """
+    seen: dict[str, str] = {}
+    posts = 0
+    # Oldest edition first. A token is stamped with the edition that printed it
+    # *first*, which is what "already seen" has to mean — stamped with the last
+    # one instead, a figure carried for weeks would look newer each week, and
+    # rebuilding the day it was last seen would let it straight back in.
+    for day in sorted(edition_dates()):
+        folder = edition_dir(day)
+        data = folder / "report.json"
+        if data.exists():
+            try:
+                blob = json.loads(data.read_text(encoding="utf-8"))
+            except json.JSONDecodeError:
+                blob = {}
+            for record in blob.get("articles", []):
+                if not str(record.get("source", "")).startswith("@"):
+                    continue
+                posts += 1
+                seen.setdefault("post:" + record["url"].rstrip("/").rsplit("/", 1)[-1], day)
+                # The post's own words, as the page shows them.
+                claim = claim_signature(f"{record.get('title', '')} {record.get('dek', '')}")
+                if claim:
+                    seen.setdefault("text:" + claim, day)
+        for figure in sorted((folder / "assets").glob("*")):
+            if figure.is_file():
+                for token in figure_tokens(figure.read_bytes()):
+                    seen.setdefault(token, day)
+    X_SEEN.write_text(json.dumps(seen, indent=2, sort_keys=True), encoding="utf-8")
+    return posts, len(seen)
+
+
+def figure_tokens(raw: bytes) -> list[str]:
+    """What retires a figure: its exact bytes, and what it looks like."""
+    if not raw:
+        return []
+    tokens = ["sha:" + hashlib.sha1(raw).hexdigest()]
+    picture = phash(raw)
+    if picture:
+        tokens.append("phash:" + picture)
+    return tokens
+
+
+def remember_printed(articles: list[Article], day: date) -> None:
+    """Retire what this edition actually printed — and only that.
+
+    Figures are read off the charts still attached rather than off everything
+    that was fetched: the budget trimmer drops surplus figures after selection,
+    and a figure retired without having been printed would be lost from every
+    future brief without ever having appeared in one.
+
+    Every chart is fingerprinted, not only the ones from X. Several of these
+    accounts republish sell-side exhibits, and two of the desks the brief reads
+    directly are on that list — so the same J.P. Morgan figure can arrive twice,
+    once from jpmorgan.com and once via @dailychartbook. Recording the figures
+    the desks supplied is what lets the X side recognise them coming round
+    again.
+    """
     stamp = day.isoformat()
+    # Everything this day previously claimed is dropped before the day is
+    # recorded again. Merging instead would make a rebuilt edition retire the
+    # union of every run that ever built it: selection shifts between runs, so
+    # a post picked by an earlier attempt and dropped by the final one would be
+    # spent without ever having been printed. Only the run that stands counts.
+    seen = {k: v for k, v in x_ledger().items() if v != stamp}
     for art in articles:
         for token in art.x_tokens:
             seen.setdefault(token, stamp)
+        for chart in art.charts:
+            for token in chart.tokens or figure_tokens(chart.data):
+                seen.setdefault(token, stamp)
     X_SEEN.write_text(json.dumps(seen, indent=2, sort_keys=True), encoding="utf-8")
 
 
@@ -870,11 +1085,12 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
     """Posts from the followed accounts that still have something to say.
 
     Everything already spent is dropped before a single image is fetched, so a
-    run that has nothing new costs nothing.
+    run that has nothing new costs nothing. What counts as spent is in
+    x_ledger: the post, the upload, the bytes, the picture and the claim.
     """
     if not X_INBOX.exists():
         if verbose:
-            print("X: no x_inbox.json — run collect_x.py to gather posts", file=sys.stderr)
+            print("X: no x_inbox.json — collect posts before building", file=sys.stderr)
         return []
     try:
         blob = json.loads(X_INBOX.read_text(encoding="utf-8"))
@@ -888,10 +1104,17 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
     # content, and holding it back would empty the page on the second run.
     today = date.today().isoformat()
     seen = {k: v for k, v in x_ledger().items() if v != today}
+    # Everything this run has taken so far, checked alongside the ledger. Two
+    # of these accounts posting one chart on the same morning is the ordinary
+    # case, and neither is in the ledger yet when the other is considered.
+    seen = dict(seen)
     out: list[Article] = []
-    skipped = 0
+    dropped: dict[str, int] = {}
 
-    for post in blob.get("posts", []):
+    def drop(why: str) -> None:
+        dropped[why] = dropped.get(why, 0) + 1
+
+    for post in sorted(blob.get("posts", []), key=lambda p: str(p.get("ts", "")), reverse=True):
         pid = str(post.get("id", "")).strip()
         handle = post.get("handle", "").lstrip("@")
         if not pid or not handle:
@@ -903,21 +1126,19 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
         if published < cutoff:
             continue
         if f"post:{pid}" in seen:
-            skipped += 1
-            continue
-
-        # A figure can be reposted under a new id — by the same account a week
-        # later, or by two of these accounts on the same day, since several of
-        # them republish the same desk research. The media key is the figure
-        # itself, so it is what settles whether this is a repeat.
-        media = [m for m in post.get("media", [])
-                 if f"media:{m.get('key')}" not in seen][:MAX_CHARTS_PER_POST]
-        if not media and post.get("media"):
-            skipped += 1
+            drop("post already used")
             continue
 
         text = tidy(post.get("text", ""))
         if not text:
+            continue
+
+        # The same number reported twice in different words is still the same
+        # number. This catches an account restating its own chart in a weekly
+        # round-up, and two accounts covering one release on the same morning.
+        claim = claim_signature(text)
+        if claim and claim_made(seen, claim):
+            drop("claim already made")
             continue
 
         title, dek = x_split(text)
@@ -938,28 +1159,51 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
         if not art.themes:
             continue
 
-        tokens = [f"post:{pid}"]
-        for item in media:
+        offered = post.get("media", [])[:MAX_CHARTS_PER_POST]
+        for item in offered:
             key, fmt = item.get("key", ""), item.get("fmt", "jpg")
-            if not key:
+            if not key or f"media:{key}" in seen:
                 continue
             raw = fetch.get(X_MEDIA.format(key=key, fmt=fmt))
             if not raw:
                 continue
-            mime = "image/png" if fmt == "png" else "image/jpeg"
-            art.charts.append(Chart(caption=f"{art.section} · "
-                                            f"{published.strftime('%d %b %Y').lstrip('0')}",
-                                    mime=mime, data=raw))
-            tokens.append(f"media:{key}")
+            # One upload re-served under a second key: same file, new id.
+            digest = hashlib.sha1(raw).hexdigest()
+            if f"sha:{digest}" in seen:
+                continue
+            # The same exhibit re-encoded or rescaled on its way to a second
+            # upload, which shares neither key nor bytes with the first.
+            picture = phash(raw)
+            if picture and near(seen, "phash", picture, PHASH_DISTANCE):
+                continue
+            chart = Chart(caption=f"{art.section} · "
+                                  f"{published.strftime('%d %b %Y').lstrip('0')}",
+                          mime="image/png" if fmt == "png" else "image/jpeg",
+                          data=raw)
+            chart.tokens = [f"media:{key}"] + figure_tokens(raw)
+            art.charts.append(chart)
+            # Claimed for this run so a later post cannot take it as well.
+            for token in chart.tokens:
+                seen[token] = today
 
-        art.x_tokens = tokens
+        # A post that was carried by its figures and has none left is a repeat,
+        # whatever its wording. A post that never had one is judged on its text.
+        if offered and not art.charts:
+            drop("figures already used")
+            continue
+
+        art.x_tokens = [f"post:{pid}"] + ([f"text:{claim}"] if claim else [])
+        seen[f"post:{pid}"] = today
+        if claim:
+            seen[f"text:{claim}"] = today
         out.append(art)
         if verbose:
             print(f"  + {published} [{art.score:2d}] {len(art.charts)} charts  "
                   f"@{handle}: {art.title[:52]}", file=sys.stderr)
 
     if verbose:
-        print(f"X: {len(out)} fresh, {skipped} already used", file=sys.stderr)
+        tally = ", ".join(f"{n} {why}" for why, n in sorted(dropped.items())) or "none held back"
+        print(f"X: {len(out)} fresh ({tally})", file=sys.stderr)
     return out
 
 
@@ -1036,8 +1280,50 @@ def gather(fetch: Fetcher, days: int, per_theme: int, verbose: bool = True) -> t
             chosen.setdefault(art.url, art)
 
     picked = sorted(chosen.values(), key=lambda a: (a.published, a.score), reverse=True)
+    shed = drop_printed_figures(picked)
+    if verbose and shed:
+        print(f"{shed} figure(s) held back, already printed in an earlier edition",
+              file=sys.stderr)
     trim_to_budget(picked)
     return picked, daily_insights(fetch, days)
+
+
+def drop_printed_figures(articles: list[Article]) -> int:
+    """Take out every figure an earlier edition already carried.
+
+    A note from either desk is allowed to carry over from one Monday to the
+    next — that standing picture is what the brief is for, and each note is
+    marked New or not so the week's arrivals are still legible. Its charts are
+    a different matter. The recency window is far wider than the gap between
+    runs, so an unfiltered note brings the same exhibits back every week: of
+    the 22 figures in the edition of 5 October, 17 had already appeared on
+    1 October. A chart says nothing the second time it is printed.
+
+    So the note keeps its place, its words and its link, and loses only the
+    figures the reader has already seen. A note in its third week is text and a
+    link; a note that is new shows everything it came with. This is the same
+    rule the X side follows, applied to the desks, and it is why the ledger
+    records every figure an edition prints rather than only the ones from X.
+
+    The day being built is excluded, or the second run of a day would strip the
+    figures the first run had just recorded.
+    """
+    today = date.today().isoformat()
+    seen = {k for k, v in x_ledger().items() if v != today}
+    shed = 0
+    for art in articles:
+        keep = []
+        for chart in art.charts:
+            tokens = chart.tokens or figure_tokens(chart.data)
+            picture = next((t[6:] for t in tokens if t.startswith("phash:")), "")
+            if any(t in seen for t in tokens) or (
+                    picture and near({k: 1 for k in seen}, "phash", picture, PHASH_DISTANCE)):
+                shed += 1
+                continue
+            chart.tokens = tokens
+            keep.append(chart)
+        art.charts = keep
+    return shed
 
 
 def trim_to_budget(articles: list[Article]) -> None:
@@ -1724,6 +2010,8 @@ def main() -> int:
     ap.add_argument("--no-cache", action="store_true", help="ignore cached pages")
     ap.add_argument("--render-only", action="store_true",
                     help="rebuild pages from reports/*/report.json, download nothing")
+    ap.add_argument("--reindex", action="store_true",
+                    help="rebuild x_seen.json from the editions on disk")
     ap.add_argument("--quiet", action="store_true")
     args = ap.parse_args()
 
@@ -1732,6 +2020,12 @@ def main() -> int:
     if moved and not args.quiet:
         print(f"filed {moved} earlier edition(s) under their year", file=sys.stderr)
     today = date.today()
+
+    if args.reindex:
+        posts, tokens = rebuild_ledger()
+        print(f"{X_SEEN.name} rebuilt from {len(edition_dates())} edition(s): "
+              f"{posts} post(s), {tokens} tokens")
+        return 0
 
     if args.render_only:
         # Every page, rebuilt from the stored words and figures. This is how an
@@ -1766,7 +2060,7 @@ def main() -> int:
     page = write_report(edition)
     # Only once the edition is on disk: a post retired against a run that then
     # failed to write would be lost from every future brief.
-    remember_x(articles, today)
+    remember_printed(articles, today)
     charts = sum(len(a.charts) for a in articles)
     size = page.stat().st_size / 1_000_000
     fresh = (f" · {edition.fresh} new since {previous}" if previous else "")

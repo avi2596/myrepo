@@ -12,6 +12,7 @@ python market_insight.py --days 60       # widen the recency window (default 45)
 python market_insight.py --per-theme 6   # more notes per subject (default 4)
 python market_insight.py --no-cache      # ignore cached pages
 python market_insight.py --render-only   # rebuild every page from stored data
+python market_insight.py --reindex       # rebuild x_seen.json from the editions on disk
 ```
 
 Requires Python 3.9+ and `pip install -r requirements-marketinsight.txt`.
@@ -57,6 +58,7 @@ What is kept is what an edition is made of:
 | --- | --- | --- |
 | `report.json` | ~25KB | the words: headlines, summaries, dates, subjects, links |
 | `assets/` | ~1MB | the figures, exactly as they came out of the source |
+| `x_seen.json` | ~15KB | what has already been printed, so nothing is printed twice |
 
 Both HTML files are rebuilt from those two, byte for byte, by
 
@@ -211,30 +213,103 @@ in `x_seen.json`.
 `x_seen.json` is the ledger, and it is committed, because it is the only thing
 standing between a weekly brief and a great deal of repetition. The recency
 window is far wider than the gap between runs, so a chart that led last Monday
-is still well inside the window this Monday.
+is still well inside the window this Monday. Measured on the first two editions
+to carry both sources, **17 of the 22 figures on 5 October had already appeared
+on 1 October**.
 
-Notes from the two desks are *allowed* to carry over — that standing picture is
-the point of the page, and each note is marked **New** or not. A chart is
-different. Printing the same figure a second time says nothing it did not say
-the first, so **a post that has been used is spent** and will not come back.
+The rule is the same whatever the source: **a figure is printed once.** A chart
+says nothing the second time, so once it has appeared it does not come back.
 
-Two things are retired, not one:
+What *is* allowed to carry over is a note's words. A note from either desk
+still appears each week with its headline, summary and link, because the
+standing picture for each subject is what the brief is for — it simply loses
+the figures the reader has already seen. A note in its third week is text and a
+link; a note that is new shows everything it came with. A post from X is
+different again: a post is its chart, so once the chart is spent the post goes
+with it.
 
-- `post:<id>` — the post itself.
-- `media:<key>` — the figure. A chart gets reposted: by the same account a week
-  later, or by two of these accounts on the same day, since several of them
-  republish the same sell-side exhibit. The media key *is* the figure, so it is
-  what settles whether something is a repeat, whatever post it arrives in.
+### The five disguises a repeat arrives in
+
+A repeat is rarely bit-identical to what it repeats, so five kinds of token are
+retired, not one:
+
+| token | catches |
+| --- | --- |
+| `post:<id>` | the post itself, reposted or re-collected |
+| `media:<key>` | X's own id for an upload, shared by a quote-repost |
+| `sha:<digest>` | the exact bytes, when one upload is re-served under a second key |
+| `phash:<hex>` | the *picture*, when the same chart is re-encoded, rescaled or re-cropped on its way to a second upload and so shares neither key nor bytes |
+| `text:<words>` | the *claim*, when two accounts report one number in different words, or an account restates its own chart in a weekly round-up |
+
+The first three are exact lookups. The last two are comparisons, because a
+re-encoded chart and a reworded sentence are never identical to what they
+repeat:
+
+- **The picture.** A difference hash: the figure is reduced to 9×8 greyscale
+  and what is recorded is which way the brightness steps between neighbouring
+  pixels. That throws away everything re-encoding changes and keeps the shape
+  of the plot. Re-encoding one of these charts at 50% scale and quality 35
+  moves the hash by **1 bit**; two different charts sit **30 bits** apart. The
+  threshold is 6, which is comfortably inside that gap.
+- **The claim.** Not a hash of the text, which changes completely when one word
+  does, but the *set* of content words, compared by how much of it two posts
+  share. One PCE print reported by two accounts in different sentences overlaps
+  a little over **half**; two unrelated posts overlap **almost nothing**. The
+  threshold is 0.45. Each word is kept as a short hash, so an entry stays on
+  one line and the ledger is a record of what was printed rather than a
+  readable copy of it.
+
+Every figure an edition prints is fingerprinted, not only the ones from X.
+Several of these accounts republish sell-side exhibits and two of the desks the
+brief reads directly are on that list, so the same J.P. Morgan figure can
+arrive twice — once from `jpmorgan.com`, once via `@dailychartbook`. Recording
+what the desks supplied is what lets the X side recognise it coming round
+again.
+
+The run also checks against itself, not only against the ledger. Two of these
+accounts posting one chart on the same morning is the ordinary case, and
+neither is in the ledger yet when the other is considered.
+
+### What the ledger is, and what it is not
 
 Only what an edition actually printed is retired. A post that was collected but
 crowded out of its subject stays in the inbox and is a candidate again next
-week, so a busy Monday does not burn a fortnight of material. And retirement
-happens *after* the edition is safely on disk — a post spent against a run that
-then failed to write would be lost from every future brief.
+week, so a busy Monday does not burn a fortnight of material. Figures are read
+off the charts still attached at the end rather than off everything fetched —
+the budget trimmer drops surplus figures *after* selection, and a figure
+retired without having been printed would be lost from every future brief
+without ever having appeared in one. Retirement happens after the edition is
+safely on disk, so a post spent against a run that then failed to write is not
+lost either.
 
-Running twice in a day rebuilds that day's edition in place, so the ledger
-ignores its own entries for the day being built. Without that, the second run
-of a day would find everything spent and publish a page with no charts on it.
+Running twice in a day rebuilds that day's edition in place, so the day being
+built is **rewritten in the ledger, not merged into**. This matters more than
+it sounds. Merging is what the first version did, and because selection shifts
+between runs, rebuilding one day's edition three times left the ledger holding
+the union of all three runs' picks — six posts were retired having never
+appeared on a page.
+
+That bug is the reason the ledger is derivable rather than merely accumulated:
+
+```
+python market_insight.py --reindex
+```
+
+rebuilds `x_seen.json` from the editions on disk. The editions are the record
+of what was printed; the ledger is a convenience kept alongside them, and
+anything kept alongside can drift. Deriving it from the archive makes the drift
+answerable — whatever the ledger claims can be checked against, and replaced
+by, what the pages actually show. Worth running after a ledger is lost, after
+editing an edition by hand, or to confirm the two still agree.
+
+Tokens are stamped with the edition that printed them **first**, which is what
+"already seen" has to mean. Stamped with the last one instead, a figure carried
+for weeks would look newer every week, and rebuilding the day it was last seen
+would let it straight back in.
+
+Media keys are not restored by `--reindex`, because an edition does not keep
+them and does not need to: the figure's bytes and its appearance are both
+recorded, and either catches a repeat the key would have caught.
 
 ### Scoring a post
 
@@ -295,7 +370,9 @@ repeats from one Monday to the next. Measured across the first two editions,
 Dropping the older notes would lose the context, which is the point of the
 page, so instead each note that was not in the previous edition is marked
 **New**, sorted to the top of its section, and counted in the masthead
-("4 new since 29 Jul"). The flag is stored in `report.json`, so a page rebuilt
+("4 new since 29 Jul"). What a carried-over note does *not* bring with it is
+its figures — see *Nothing is printed twice* — so the **New** flag is also the
+answer to why one note has charts and the one below it does not. The flag is stored in `report.json`, so a page rebuilt
 with `--render-only` months later still shows what was new at the time rather
 than recomputing it against whatever is on disk now.
 
@@ -338,6 +415,12 @@ July brief.
 - **Keyword scoring is not comprehension.** It is tuned against what these two
   desks actually publish and will need revisiting if either changes its house
   style. `--days` and `--per-theme` are the dials.
+- **The picture hash is not comprehension either.** It recognises the same
+  figure re-encoded, rescaled or lightly re-cropped. It will not recognise the
+  same *data* redrawn — a desk's chart and an account's own plot of the same
+  series are two different pictures, and both can appear. Pillow is what
+  computes it; without Pillow installed that check is skipped and the other
+  four still apply.
 - **X needs a browser.** The build itself is unattended, but the inbox it reads
   is not — see *The X accounts*. An account can also simply go quiet, and a
   quiet account is indistinguishable from a collection that failed: on
