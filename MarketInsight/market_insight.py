@@ -51,6 +51,7 @@ import re
 import sys
 import time
 from dataclasses import dataclass, field
+from functools import lru_cache
 from itertools import groupby
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
@@ -138,6 +139,13 @@ THEMES: dict[str, dict] = {
             "s&p 500": 2, "nasdaq": 2, "share price": 2, "earnings": 1,
             "valuation": 1, "ipo": 1, "buyback": 1,
             "market concentration": 2, "russell": 1,
+            # The desks write "the stock market"; the accounts write the
+            # ticker. Both have to score, or a week of good breadth and
+            # positioning charts files under nothing at all.
+            "spx": 2, "ndx": 2, "nasdaq 100": 2, "xlk": 2, "s&p": 2,
+            "small cap": 2, "smid": 2, "mid cap": 1, "breadth": 2,
+            "short interest": 2, "new lows": 2, "new highs": 2,
+            "sector": 1, "etf": 1, "vix": 2, "drawdown": 1, "rally": 1,
         },
     },
     "us-macro": {
@@ -194,6 +202,11 @@ THEMES: dict[str, dict] = {
         "label": "Global Markets",
         "dot": "#7a3b5e",
         "terms": {
+            # Index names are how a non-US market is actually named in a post.
+            "ftse": 2, "dax": 2, "nikkei": 2, "ibovespa": 2, "bovespa": 2,
+            "hang seng": 2, "euro stoxx": 2, "acwi": 2, "msci": 2,
+            "brazil": 2, "japan": 1, "europe": 1, "india": 1,
+            "non-us": 2, "outside the united states": 2, "international": 1,
             "global markets": 2, "emerging markets": 2, "china": 2,
             "eurozone": 2, "geopolit": 2, "global economy": 2, "trade war": 2,
             "global growth": 2, "world economy": 2, "cross-border": 1,
@@ -432,6 +445,23 @@ def key_points(soup: BeautifulSoup, limit: int = 4) -> list[str]:
     return out
 
 
+@lru_cache(maxsize=None)
+def term_pattern(term: str) -> re.Pattern:
+    return re.compile(r"(?<!\w)" + re.escape(term) + r"(?!\w)")
+
+
+def term_present(term: str, text: str) -> bool:
+    """Whether a theme's term appears as a word rather than inside one.
+
+    Plain substring matching files a note about equity positioning under Metals
+    because "Goldman Sachs" contains "gold" — and the brief reads two desks and
+    six accounts that quote Goldman constantly. Boundaries are checked on word
+    characters only, so terms that contain punctuation or spaces ("s&p 500",
+    "rate cut") still match the way they always did.
+    """
+    return bool(term_pattern(term).search(text))
+
+
 def classify(article: Article, haystacks: dict[str, str],
              floor: int = ARTICLE_FLOOR) -> None:
     """Score an article against every theme and keep the ones it clears.
@@ -449,7 +479,7 @@ def classify(article: Article, haystacks: dict[str, str],
         total = 0
         for term, weight in spec["terms"].items():
             for field_name, text in haystacks.items():
-                if term in text:
+                if term_present(term, text):
                     hit = weight * weights[field_name]
                     total += min(hit, 3) if field_name == "body" else hit
         if total >= THEME_FLOOR:
@@ -1276,7 +1306,7 @@ def gather(fetch: Fetcher, days: int, per_theme: int, verbose: bool = True) -> t
         ranked = sorted((a for a in posts if theme in a.themes),
                         key=lambda a: (a.themes[0] == theme, len(a.charts), a.published, a.score),
                         reverse=True)
-        for art in ranked[:X_PER_THEME]:
+        for art in spread_by_account(ranked, X_PER_THEME):
             chosen.setdefault(art.url, art)
 
     picked = sorted(chosen.values(), key=lambda a: (a.published, a.score), reverse=True)
@@ -1286,6 +1316,33 @@ def gather(fetch: Fetcher, days: int, per_theme: int, verbose: bool = True) -> t
               file=sys.stderr)
     trim_to_budget(picked)
     return picked, daily_insights(fetch, days)
+
+
+def spread_by_account(ranked: list[Article], limit: int) -> list[Article]:
+    """Take the best few, but not all from whoever posted most recently.
+
+    Ranking is by date before score, and one of these accounts posts a dozen
+    charts a morning while another posts two a week. Straight off the ranking a
+    subject therefore goes entirely to whoever was last to post: the first run
+    of this gave seven of nine figures to one account and none to the two that
+    had the week's best charts.
+
+    So a subject is filled a round at a time, one account per round. It is the
+    same reasoning the two desks already get — both are shown where both have
+    written, because they answer the same question differently — and these
+    accounts differ from each other more than the desks do.
+    """
+    rounds: dict[str, list[Article]] = {}
+    for art in ranked:
+        rounds.setdefault(art.source, []).append(art)
+    out = []
+    for depth in range(limit):
+        for queue in rounds.values():
+            if depth < len(queue) and len(out) < limit:
+                out.append(queue[depth])
+        if len(out) >= limit:
+            break
+    return out
 
 
 def drop_printed_figures(articles: list[Article]) -> int:
@@ -1943,6 +2000,13 @@ def write_report(edition: Edition) -> Path:
     folder = edition_dir(day.isoformat())
     assets = folder / "assets"
     assets.mkdir(parents=True, exist_ok=True)
+    # Figures are named by position, so a rebuild that selects differently
+    # leaves the previous run's surplus behind under names nothing references.
+    # They are not merely untidy: rebuild_ledger reads this folder to learn what
+    # an edition printed, and would retire figures that never appeared.
+    for stale in assets.iterdir():
+        if stale.is_file():
+            stale.unlink()
 
     # Charts are inlined into the page, but they are also written out as files
     # so a figure can be reused somewhere else without unpicking base64.

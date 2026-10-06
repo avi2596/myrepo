@@ -414,7 +414,13 @@ July brief.
   to the desk's own summary line.
 - **Keyword scoring is not comprehension.** It is tuned against what these two
   desks actually publish and will need revisiting if either changes its house
-  style. `--days` and `--per-theme` are the dials.
+  style. `--days` and `--per-theme` are the dials. The vocabulary carries each
+  subject twice over, because the desks and the accounts do not write alike: a
+  desk writes "the stock market" and "emerging markets", while an account
+  writes SPX, XLK, FTSE, Ibovespa. Terms match on word boundaries — without
+  that, "Goldman Sachs" contains "gold" and files a note about equity
+  positioning under Metals, which these accounts quote often enough for it to
+  matter.
 - **The picture hash is not comprehension either.** It recognises the same
   figure re-encoded, rescaled or lightly re-cropped. It will not recognise the
   same *data* redrawn — a desk's chart and an account's own plot of the same

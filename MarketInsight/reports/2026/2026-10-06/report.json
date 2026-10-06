@@ -1,0 +1,640 @@
+{
+  "date": "2026-10-06",
+  "built": "2026-10-06T13:45:26",
+  "previous": "2026-10-05",
+  "articles": [
+    {
+      "url": "https://x.com/Bluekurtic/status/2107430911143018558",
+      "source": "@Bluekurtic",
+      "section": "Bluekurtic Market Insights",
+      "title": "The S&P 500 Tech ETF XLK hit overbought levels for the first time in three months",
+      "dek": "Overbought is not a reason to sell: three months out, XLK was higher in 17 of 20 past cases.",
+      "published": "2026-10-06",
+      "themes": [
+        "us-stocks"
+      ],
+      "score": 32,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "01-1.jpg",
+          "caption": "Bluekurtic Market Insights \u00b7 6 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://x.com/dailychartbook/status/2107418172114579643",
+      "source": "@dailychartbook",
+      "section": "Daily Chartbook",
+      "title": "The S&P (dark line) is pinned near its highs while the S&P excluding AI stocks (SPXXAI) has fallen roughly\u2026",
+      "dek": "The S&P (dark line) is pinned near its highs while the S&P excluding AI stocks (SPXXAI) has fallen roughly 7% from its late-August peak, giving back its entire summer rally. -Brian Garrett, Goldman Sachs",
+      "published": "2026-10-06",
+      "themes": [
+        "us-stocks"
+      ],
+      "score": 27,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "02-1.jpg",
+          "caption": "Daily Chartbook \u00b7 6 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://x.com/NautilusCap/status/2107432898793971804",
+      "source": "@NautilusCap",
+      "section": "Nautilus Research",
+      "title": "Brazil's Ibovespa: a buyable pullback",
+      "dek": "Historically, when the six-month rate of change in the Bovespa falls back below -5% after previously elevated levels, such momentum corrections have meant a reset. At the six-month forward horizon, all 11 instances since 1995 have produced positive returns, with an average gain of more than 18%.",
+      "published": "2026-10-06",
+      "themes": [
+        "global"
+      ],
+      "score": 22,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "03-1.png",
+          "caption": "Nautilus Research \u00b7 6 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://x.com/NautilusCap/status/2107422109249028529",
+      "source": "@NautilusCap",
+      "section": "Nautilus Research",
+      "title": "The UK FTSE index shows a strong Q4 seasonal tendency, against a seasonal composite of the last 42 years",
+      "dek": "Quarterly seasonality puts Q4 at a 3.56% average with 32 of 42 years higher.",
+      "published": "2026-10-06",
+      "themes": [
+        "global"
+      ],
+      "score": 8,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "04-1.jpg",
+          "caption": "Nautilus Research \u00b7 6 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://x.com/dailychartbook/status/2107380598960492669",
+      "source": "@dailychartbook",
+      "section": "Daily Chartbook",
+      "title": "The $40tn US debt problem is not at bond-shock territory yet",
+      "dek": "5% Treasury yields still reflect nominal growth, but a rapid move to 6% alongside $150 oil could trigger a micro credit event. -Manish Kabra, SocGen",
+      "published": "2026-10-06",
+      "themes": [
+        "oil"
+      ],
+      "score": 6,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "05-1.jpg",
+          "caption": "Daily Chartbook \u00b7 6 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/markets/smid-cap-outlook",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Markets",
+      "title": "SMID-Cap Outlook: The Revival Looks Set to Continue",
+      "dek": "The stock market is broadening as investors rotate away from the crowded mega-cap space and into the small- and mid-cap universe. What\u2019s driving this shift?",
+      "published": "2026-10-05",
+      "themes": [
+        "us-stocks"
+      ],
+      "score": 35,
+      "points": [
+        "Small- and mid-cap (SMID) stocks are rebounding, with the Russell 2500 Index outpacing larger-cap benchmarks like the S&P 500.",
+        "This dynamic is playing out in developed markets (DM); conversely, SMID caps have underperformed in emerging markets (EM) year to date.",
+        "J.P. Morgan Global Research expects the SMID-cap revival to continue in the short term thanks to five reasons: improving fundamentals, depressed positioning, trough technicals, geopolitical tailwinds and record valuation discounts."
+      ],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "06-1.svg",
+          "caption": "Infographic depicting the year-to-date performance of the Russell 2500 Index and the S&P 500."
+        }
+      ]
+    },
+    {
+      "url": "https://x.com/NautilusCap/status/2107104742484959704",
+      "source": "@NautilusCap",
+      "section": "Nautilus Research",
+      "title": "Nasdaq 100 up more than 20% through Q3",
+      "dek": "Historically, year-to-date-through-Q3 returns for the NDX exceeding 20% show further upside follow-through, with the rest of the year averaging 14.1% across 12 events since 1996.",
+      "published": "2026-10-05",
+      "themes": [
+        "us-stocks"
+      ],
+      "score": 22,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "07-1.png",
+          "caption": "Nautilus Research \u00b7 5 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://x.com/RenMacLLC/status/2107156103314415861",
+      "source": "@RenMacLLC",
+      "section": "RenMac",
+      "title": "The Fed has a conundrum as it tries to tame elevated inflation",
+      "dek": "one of the primary drivers of growth, AI, appears nearly immune to the higher borrowing costs the central bank has begun to impose. Businesses invested more than $100 billion in computers and related equipment in the second quarter, up 60 percent from a year earlier and more than 1.5 times the rate in early 2024. Construction of data centers has more than quintupled since the beginning of 2022.",
+      "published": "2026-10-05",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 16,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": []
+    },
+    {
+      "url": "https://x.com/dailychartbook/status/2107040684473503872",
+      "source": "@dailychartbook",
+      "section": "Daily Chartbook",
+      "title": "US natural gas production reached a record high in July 2026, at 137 billion cubic feet per day of gross\u2026",
+      "dek": "US natural gas production reached a record high in July 2026, at 137 billion cubic feet per day of gross withdrawals.",
+      "published": "2026-10-05",
+      "themes": [
+        "oil"
+      ],
+      "score": 12,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "09-1.jpg",
+          "caption": "Daily Chartbook \u00b7 5 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://x.com/Bluekurtic/status/2106775812133605595",
+      "source": "@Bluekurtic",
+      "section": "Bluekurtic Market Insights",
+      "title": "Less than a month from the midterms, money is moving into non-US stocks",
+      "dek": "ACWX, which tracks equities outside the United States, saw its biggest monthly inflow ever: $5.2 billion in September.",
+      "published": "2026-10-04",
+      "themes": [
+        "us-stocks",
+        "global"
+      ],
+      "score": 14,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "10-1.jpg",
+          "caption": "Bluekurtic Market Insights \u00b7 4 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://x.com/RenMacLLC/status/2106352662752985549",
+      "source": "@RenMacLLC",
+      "section": "RenMac",
+      "title": "Bitcoin versus gold: why crypto is ignoring Treasury yields",
+      "dek": "",
+      "published": "2026-10-03",
+      "themes": [
+        "metals"
+      ],
+      "score": 8,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/commodities/iran-us-tensions-market-effect",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Commodities",
+      "title": "Economic Impact of Iran Conflict on Oil, Gold and More",
+      "dek": "With $100/bbl crude, commodities markets are repricing risk in real time \u2014 with some surprising results.",
+      "published": "2026-10-02",
+      "themes": [
+        "metals",
+        "oil"
+      ],
+      "score": 28,
+      "points": [
+        "The U.S.\u2013Israel military operation against Iran has led to dramatic seesaws in oil markets, with Brent crude prices elevated for much of the year.",
+        "Gold\u2019s status as a safe haven has been tested during the Iran conflict, though J.P. Morgan Global Research believes structural drivers \u2014 including central bank buying and broader de-dollarization \u2014 are still intact.",
+        "As with oil, aluminum prices could be affected by the status of the Strait of Hormuz following attacks on key Middle Eastern smelters, with an \u201cinvisible\u201d aluminum deficit potentially working its way through the supply chain.",
+        "Overall, the conflict\u2019s effect on global growth may prove less severe than initially feared, with J.P. Morgan economists expressing cautious optimism that a cyclical upturn could continue."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/economy/fed-rate-cuts",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Economy",
+      "title": "What\u2019s The Fed\u2019s Next Move?",
+      "dek": "J.P. Morgan Global Research now sees the Fed hiking rates in December, especially as the central bank has yet to lay out a roadmap for tackling inflation.",
+      "published": "2026-09-25",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 35,
+      "points": [
+        "The Federal Open Market Committee (FOMC) concluded its September meeting by voting unanimously to raise rates by a quarter point, bringing the federal funds rate to 3.75\u20134.0%.",
+        "The hike came amid persistent inflation concerns, with core Personal Consumption Expenditures (PCE) inflation running above 3% every month of 2026, as well as \u201cgeopolitical developments,\u201d according to the FOMC statement.",
+        "J.P. Morgan Global Research forecasts another quarter-point raise in December, but does not expect a longer-term hiking cycle."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/energy-bills.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 September 2026",
+      "title": "Energy Bills: Short-term relief, longer-term challenges",
+      "dek": "Utility bill inflation has moderated, but household payments remain elevated and longer-term pressures are building.",
+      "published": "2026-09-16",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 11,
+      "points": [
+        "Energy bill inflation was around 4% year-over-year (YoY) in August 2026. However, Bank of America internal deposit data shows average utility bill payments rose faster, increasing 5% YoY from June through August. This was likely due, in part, to higher cooling demand during a warm summer.",
+        "But bill pressures remain highly uneven across the country. Average utility payments have risen by more than 10% YoY in cities such as Detroit, Baltimore and Washington DC, while consumers in Orlando, San Jose and Tampa have seen declines. Some of these regional differences appear to reflect policy and infrastructure factors as much as energy usage itself."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/energy-bills.pdf",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/markets/india-stock-market-outlook",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Markets",
+      "title": "What is the outlook for India\u2019s stock market?",
+      "dek": "As global investors trim or diversify away from AI, Indian stocks are emerging as the world\u2019s largest liquid AI hedge. Explore India\u2019s equity market outlook and the three macro factors that will likely shape it.",
+      "published": "2026-09-15",
+      "themes": [
+        "us-stocks",
+        "global",
+        "us-macro"
+      ],
+      "score": 25,
+      "points": [
+        "India's equity market is starting to emerge as an \u201cAI hedge\u201d \u2014 a liquid, large-weight market that global investors can rotate into when they trim or diversify away from volatile AI cycles.",
+        "Earnings have been the missing engine for two years but are finally picking up, with large caps joining the recovery in mid and small caps.",
+        "Oil prices, global bond yields and El Ni\u00f1o are the key macroeconomic factors that will likely shape the outlook not only for the second half of 2026 but also into 2027."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/consumer-checkpoint-september-2026.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 September 2026",
+      "title": "Consumer Checkpoint: Still sizzling",
+      "dek": "August spending remained robust as consumers sought value, income groups converged and household finances stayed healthy.",
+      "published": "2026-09-14",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 11,
+      "points": [
+        "Consumer spending remained solid in August. Total card spending per household rose 0.9% month-over-month and 4.5% year-over-year, according to Bank of America internal data. Discretionary services continue to provide a steady foundation for this growth, despite moderation in a few categories.",
+        "Consumers still appear to be focused on value. Spending at general merchandise and big-box retailers continues to outperform more traditional retailers, as evidenced during the back-to-school season. This suggests households are actively seeking lower-cost alternatives while maintaining spending."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/consumer-checkpoint-september-2026.pdf",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/current-events/us-tariffs",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Current Events",
+      "title": "US Tariffs: What\u2019s the Impact?",
+      "dek": "The situation surrounding U.S. tariffs is constantly evolving. Read the latest analysis of their economic impact from J.P. Morgan Global Research.",
+      "published": "2026-09-09",
+      "themes": [
+        "global",
+        "metals",
+        "us-macro"
+      ],
+      "score": 12,
+      "points": [
+        "Consequently, Canada has announced it will impose dollar-for-dollar counter-tariffs beginning September 8, with individual product rates based on the matching U.S. rate for the same goods.",
+        "President Trump has floated tariffs on imported generic medicines in a bid to move production to the U.S. Under this proposal, which has not been finalized, generic drugs would initially not face any tariffs for two years starting from August 1, 2026, after which rates will be raised to 100% for one year (from August 2028) and to 200% thereafter.",
+        "July 20: The Trump administration announces 50% tariffs on Canadian imports",
+        "June 7: The US lowers tariffs on agricultural and industrial equipment"
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/currencies/de-dollarization",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Currencies",
+      "title": "De-dollarization: The End of Dollar Dominance?",
+      "dek": "Top dollar no more? Discover the factors threatening the dominance of the world\u2019s reserve currency and how this is playing out across markets.",
+      "published": "2026-09-04",
+      "themes": [
+        "usd"
+      ],
+      "score": 44,
+      "points": [
+        "While the U.S.\u2019s share of global trade has declined, the dollar\u2019s transactional dominance is still evident in areas including FX volumes and trade invoicing.",
+        "While there are currently no scalable alternatives to the dollar, China is settling more trades in yuan, while BRICS nations are exploring a common currency to reduce their dependence on the dollar.",
+        "Currently, the dollar-centric system gives the U.S. significant geopolitical leverage beyond cheaper funding costs, including the ability to impose sanctions and control payment systems."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/monthly-employment-report-august-2026.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 September 2026",
+      "title": "The Institute Employment Report: August 2026",
+      "dek": "Growth in jobs and after-tax wages softened in August, but both continue to suggest a broadly resilient labor market.",
+      "published": "2026-09-03",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 20,
+      "points": [
+        "Bank of America customer deposit account data suggests labor market momentum cooled in August, with estimated payroll growth of 1.5% year-over-year (YoY), down from 1.8% in July.",
+        "The long-standing \"K\" shape between higher- and lower-income households' after-tax wage growth has reversed: August saw lower-income households' after-tax wage growth of 4.7% YoY, while higher-income households' after-tax wage growth was 3.5% YoY.",
+        "Recently, there has been an increase in job switching, and the pay change associated with a job change reached the highest level in more than three years in July. This acceleration is most notable among weekly-paid employees, suggesting rising mobility among hourly and lower-income workers may be contributing to the narrowing of wage growth differences."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/monthly-employment-report-august-2026.pdf",
+      "new": true,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/markets-and-economy/tracking-international-payments-midsize-firms-responding-continued-tariff-pressure",
+      "source": "J.P. Morgan",
+      "section": "Markets & Economy",
+      "title": "Tracking international payments: How are midsize firms responding to continued tariff pressure?",
+      "dek": "",
+      "published": "2026-09-02",
+      "themes": [
+        "us-macro",
+        "global"
+      ],
+      "score": 16,
+      "points": [
+        "Tracking international payments: How are midsize firms responding to continued tariff pressure?",
+        "We examine how midsize 1 U.S. firms are responding to a volatile tariff environment from early 2025 through mid-2026 in a new report, using payment flows to track (1) tariff payments and (2) payments sent to U.S. (domestic outflows) vs. foreign (international outflows) counterparties.",
+        "This page provides a summary of key insights (5 min read). You can read the full report with additional figures and methodologies here .",
+        "Figure: International outflows have increased slightly since late 2025 but remain below the trend of domestic outflows:"
+      ],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "20-1.png",
+          "caption": "figure 2"
+        },
+        {
+          "file": "20-2.png",
+          "caption": "figure 3"
+        },
+        {
+          "file": "20-3.png",
+          "caption": "figure 4"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/markets-and-economy/markets/the-rush-for-resources",
+      "source": "J.P. Morgan",
+      "section": "Markets & Economy \u00b7 Markets",
+      "title": "The Rush for Resources",
+      "dek": "How rising geopolitical tensions are driving the strategic control of commodities and rewriting the playbook",
+      "published": "2026-09-02",
+      "themes": [
+        "metals",
+        "global",
+        "us-macro"
+      ],
+      "score": 15,
+      "points": [
+        "Geopolitics is increasingly influencing commodity pricing, volatility, and investor behavior.",
+        "Strategic stockpiling and supply chain security are becoming governmental priorities.",
+        "Investors are looking beyond fundamentals as tariffs, conflict, and policy disruption reshape markets."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/markets-and-economy/markets/commodities-in-a-changing-geopolitical-landscape",
+      "source": "J.P. Morgan",
+      "section": "Markets & Economy \u00b7 Markets",
+      "title": "Commodities in a changing geopolitical landscape",
+      "dek": "Mischa-Von-Derek Aikman, Head of Commodities Institutional Sales for the Americas at J.P. Morgan, discusses how global tensions are changing the commodities landscape\u2014and what it means for investors navigating increasingly volatile markets.",
+      "published": "2026-09-02",
+      "themes": [
+        "metals",
+        "global"
+      ],
+      "score": 13,
+      "points": [
+        "Adjust your filter selections to find what you\u2019re looking for"
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/markets-and-economy/markets/the-certainty-of-uncertainty",
+      "source": "J.P. Morgan",
+      "section": "Markets & Economy \u00b7 Markets",
+      "title": "Volatility is no longer the exception",
+      "dek": "Geopolitical shocks, commodity swings, retail flows, and rapid reversals are changing how markets move. Explore how institutional traders are managing volatility as an ongoing condition\u2014using data, technology, and judgment to respond faster and think further ahead.",
+      "published": "2026-08-28",
+      "themes": [
+        "metals",
+        "oil",
+        "global",
+        "us-stocks",
+        "us-macro"
+      ],
+      "score": 11,
+      "points": [
+        "Volatility, now considered a defining feature of today\u2019s markets, is forcing investors to rethink how they manage risk, build resilience, and target opportunities.",
+        "Geopolitical fragmentation, commodity disruption, and retail participation are making market moves faster, sharper, and harder to read.",
+        "Technology is helping traders process information and respond more efficiently to changing market conditions, while advances in execution tools, data, and analytics are reshaping how risk is monitored and managed."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    }
+  ],
+  "daily_insights": [
+    {
+      "title": "Ready player Z: 28% of Gen Z spend on gaming",
+      "date": "2026-10-02",
+      "url": "https://institute1.bofa.com/C?q=30dc0yH4jQE"
+    },
+    {
+      "title": "Consumption patterns change as the population ages",
+      "date": "2026-10-01",
+      "url": "https://institute1.bofa.com/C?q=JAlqfGn29Us"
+    },
+    {
+      "title": "Iran conflict boosts US role in global fuel markets",
+      "date": "2026-09-30",
+      "url": "https://institute1.bofa.com/C?q=NBKXDlpe9ws"
+    },
+    {
+      "title": "Nuclear power isn\u2019t one-size-fits-all",
+      "date": "2026-09-29",
+      "url": "https://institute1.bofa.com/C?q=BoBKu75hrB8"
+    },
+    {
+      "title": "Mid-sized firms\u2019 AI spending growth peaked in August",
+      "date": "2026-09-28",
+      "url": "https://institute1.bofa.com/C?q=VbNJCHEYOUA"
+    },
+    {
+      "title": "Gen Z and younger Millennials roll the dice on games",
+      "date": "2026-09-25",
+      "url": "https://institute1.bofa.com/C?q=6NnqBiilfCQ"
+    },
+    {
+      "title": "Small firms lead mid-sized firms in profitability growth",
+      "date": "2026-09-24",
+      "url": "https://institute1.bofa.com/C?q=WacBwe9bn3I"
+    },
+    {
+      "title": "\u201cFunflation\u201d in hobbies hasn\u2019t stopped purchases yet",
+      "date": "2026-09-23",
+      "url": "https://institute1.bofa.com/C?q=QMcb2FdKpH4"
+    },
+    {
+      "title": "Rising electricity demand could keep energy bills elevated",
+      "date": "2026-09-22",
+      "url": "https://institute1.bofa.com/C?q=DtN0V0Gwqqw"
+    },
+    {
+      "title": "Younger generations have less borrowing capacity",
+      "date": "2026-09-21",
+      "url": "https://institute1.bofa.com/C?q=wDpO-TvySuk"
+    },
+    {
+      "title": "El Ni\u00f1o: A consumer tailwind, but a weather risk",
+      "date": "2026-09-18",
+      "url": "https://institute1.bofa.com/C?q=w4v7pfTxGiQ"
+    },
+    {
+      "title": "Utility bill inflation differs across the country",
+      "date": "2026-09-17",
+      "url": "https://institute1.bofa.com/C?q=FT-65JVpZV0"
+    },
+    {
+      "title": "Energy bills increase faster than utility prices",
+      "date": "2026-09-16",
+      "url": "https://institute1.bofa.com/C?q=v7OwJdee8WI"
+    },
+    {
+      "title": "Spending and transactions tell a nuanced consumer story",
+      "date": "2026-09-15",
+      "url": "https://institute1.bofa.com/C?q=AueMLvKNtLE"
+    },
+    {
+      "title": "Consumer spending remained hot throughout the summer",
+      "date": "2026-09-14",
+      "url": "https://institute1.bofa.com/C?q=ilNGEOGaiRo"
+    },
+    {
+      "title": "What\u2019s the AI impact on recent graduates\u2019 job opportunities?",
+      "date": "2026-09-10",
+      "url": "https://institute1.bofa.com/C?q=ctzp7AauMII"
+    },
+    {
+      "title": "Job changers see biggest pay gains since 2023",
+      "date": "2026-09-09",
+      "url": "https://institute1.bofa.com/C?q=IhmyUN2CU2M"
+    },
+    {
+      "title": "34% of online sports bettors place bets weekly",
+      "date": "2026-09-08",
+      "url": "https://institute1.bofa.com/C?q=HwAidiETqYY"
+    },
+    {
+      "title": "Sports drive online betting adoption",
+      "date": "2026-09-04",
+      "url": "https://institute1.bofa.com/C?q=UC21v-Va1VM"
+    },
+    {
+      "title": "The wage growth gap has reversed",
+      "date": "2026-09-03",
+      "url": "https://institute1.bofa.com/C?q=u0wtLUJugM8"
+    },
+    {
+      "title": "Gen Z drives subscription growth, but Gen X still spends more",
+      "date": "2026-09-02",
+      "url": "https://institute1.bofa.com/C?q=!Oz9qGkrLXY"
+    },
+    {
+      "title": "Cash recovery from online betting falls short",
+      "date": "2026-09-01",
+      "url": "https://institute1.bofa.com/C?q=fem5pD0hOyE"
+    },
+    {
+      "title": "Some homeowners pick remodels over moves",
+      "date": "2026-08-31",
+      "url": "https://institute1.bofa.com/C?q=brLwC8459gw"
+    },
+    {
+      "title": "Falling rents free up budgets",
+      "date": "2026-08-28",
+      "url": "https://institute1.bofa.com/C?q=zaI!soiZmWM"
+    },
+    {
+      "title": "AI investment is elevated, but not unprecedented",
+      "date": "2026-08-27",
+      "url": "https://institute1.bofa.com/C?q=f2yuugfJnZg"
+    },
+    {
+      "title": "Higher-income buyers make up over 40% of auto demand",
+      "date": "2026-08-26",
+      "url": "https://institute1.bofa.com/C?q=xlKLN0tiGEM"
+    },
+    {
+      "title": "Younger consumers drive restaurant spending in July",
+      "date": "2026-08-25",
+      "url": "https://institute1.bofa.com/C?q=G9!LuwF6hJo"
+    },
+    {
+      "title": "Food spending shifts toward dining out",
+      "date": "2026-08-24",
+      "url": "https://institute1.bofa.com/C?q=2gig4v-mcsg"
+    }
+  ]
+}
