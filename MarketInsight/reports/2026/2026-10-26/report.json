@@ -1,0 +1,412 @@
+{
+  "date": "2026-10-26",
+  "built": "2026-10-26T07:55:01",
+  "previous": "2026-10-19",
+  "articles": [
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/global-bond-market-update",
+      "source": "J.P. Morgan",
+      "section": "Global Research",
+      "title": "Global Government Bond Yields Hit Multi-Decade Highs",
+      "dek": "See why global bond yields are at multi-decade highs, what's driving rising Treasury yields, how higher interest rates affect stocks and consumers, and more.",
+      "published": "2026-10-19",
+      "themes": [
+        "us-stocks",
+        "us-macro",
+        "global"
+      ],
+      "score": 17,
+      "points": [
+        "Global bond yields have surged to multi-decade highs, with the U.S. 10-year Treasury, U.K. 30-year gilt, French 10-year and Japanese 10-year government bond all hitting levels unseen in more than 20 years.",
+        "An increase in projected rate hikes, elevated energy prices and sticky inflation amid a backdrop of healthy labor markets and growth have driven the spike in yields in the U.S. and Europe.",
+        "Higher yields risk being self-reinforcing, with tighter credit and pricier borrowing feeding larger deficits.",
+        "The squeeze from high yields threatens both equities and consumers, with equity-yield correlations growing more fragile and consumers facing higher APRs on car loans, mortgages and other credit."
+      ],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "01-1.svg",
+          "caption": "Bond Graph"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/artificial-intelligence/ai-capex",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Artificial Intelligence",
+      "title": "AI Capex & Hyperscaler Investment Outlook",
+      "dek": "AI capital expenditures are projected to approach a trillion dollars. How big will it get, and how long will it last?",
+      "published": "2026-10-19",
+      "themes": [
+        "global",
+        "us-stocks"
+      ],
+      "score": 11,
+      "points": [
+        "J.P. Morgan Global Research projects global spending on AI capex to reach $5.5 trillion by 2030 and for $900 billion to be spent in 2026 alone.",
+        "Revenue from cloud service providers has become the most salient data supporting the investment thesis for AI capex, with revenue run-rates showing year-over-year gains and future contracted revenues projecting solid growth.",
+        "The shift in financing for the AI capex buildout from free cash flow to debt, including bond and equity raises, offers a clear window into investor appetite to fund AI capex.",
+        "Bottlenecks ranging from memory and GPU supply to permitting and public opinion represent real challenges to the pace and profitability of AI capex."
+      ],
+      "pdf": "",
+      "new": true,
+      "charts": []
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/business-checkpoint-october-2026.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 October 2026",
+      "title": "Business Checkpoint: Looking into the logistics",
+      "dek": "Profitability growth was positive in the third quarter, but logistics costs and supply chain pressures are creating challenges.",
+      "published": "2026-10-15",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 10,
+      "points": [
+        "Small and mid-sized businesses entered Q3 in relatively solid financial condition, with profitability growth up across both groups, according to Bank of America business account data. Nearly half of estimated tariff payments had been refunded by September, though the share of these refunds relative to revenue has peaked.",
+        "In Bank of America business payments data, logistics spending growth per client was up four times as much for small than midsized firms. Additionally, distribution and inventory transactions growth per client has outpaced spending since the spring of 2025.",
+        "Growing transportation bottlenecks are re-emerging ahead of the holiday season. Trucking capacity has tightened as driver availability remains constrained, according to BofA Global Research. This has pushed freight rates higher and driven strong transportation sector payroll growth, particularly among mid-sized businesses, according to Bank of America payments data."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/business-checkpoint-october-2026.pdf",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/real-estate/housing-affordability",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Real Estate",
+      "title": "The Long Road Home: Examining the Global Housing Affordability Crisis",
+      "dek": "Chronic supply-demand imbalances, elevated mortgage rates and rising ownership costs are straining housing affordability across many markets \u2014 a global problem that demands localized solutions.",
+      "published": "2026-10-12",
+      "themes": [
+        "us-macro",
+        "global",
+        "us-stocks"
+      ],
+      "score": 11,
+      "points": [
+        "Despite unprecedented wealth gains, housing affordability in the U.S. is at multi-decade lows, with factors including tight inventory and high mortgage rates pricing buyers out of the market.",
+        "Recent U.S. policy actions such as the passage of the 21st Century ROAD to Housing Act and the purchase of agency mortgage-backed securities (MBS) have provided limited relief.",
+        "Beyond the U.S., housing affordability is very much a global story. For instance, China remains in a prolonged housing reset, while affordable housing is losing market share in India."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/consumer-checkpoint-october-2026.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 October 2026",
+      "title": "Consumer Checkpoint: Strength in numbers",
+      "dek": "September saw solid spending across many categories and a strong start to the holidays.",
+      "published": "2026-10-09",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 11,
+      "points": [
+        "Consumer spending remained very solid in September. Bank of America aggregated credit and debit card spending per household rose 6.2% year-over-year (YoY), or 5.1% excluding gasoline, both the third strongest growth rates over the past four years. Month-over-month (MoM) spending was more muted, especially without gas.",
+        "Spending shows considerable breadth: the vast majority of discretionary retail and services categories are showing growth. Moreover, this strength extends across income cohorts, with the ongoing recovery of lower- and middle-income households' spending growth.",
+        "With the winter months fast approaching, holiday spending is already increasing at a solid rate, though it's still early. In Bank of America deposit data through September, buy now, pay later (BNPL) usage is rising but not at a rate that is overly concerning. However, nearly one in every five households that use BNPL has a repayment of over $500."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/consumer-checkpoint-october-2026.pdf",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://institute.bankofamerica.com/economic-insights/monthly-employment-report-september-2026.html",
+      "source": "BofA Institute",
+      "section": "Economic Insights \u00b7 October 2026",
+      "title": "The Institute Employment Report: September 2026",
+      "dek": "Bank of America Institute analysis shows slower payroll growth, declining unemployment payments and continued strength in lower-income wage growth.",
+      "published": "2026-10-07",
+      "themes": [
+        "us-macro"
+      ],
+      "score": 22,
+      "points": [
+        "Job growth softened further in September, according to Bank of America's deposit data, with growth of 1.4% year-over-year (YoY), from 1.5% in August. But falling unemployment payments in September indicate a relatively healthy overall picture.",
+        "Lower-income households' wage growth remains strongest, despite a narrowing gap. After-tax wage growth eased to 4.5% YoY for lower-income households in September, while rising to 3.8% and 3.7% for middle- and higher-income households, respectively.",
+        "Lower tax withholdings and a relative strengthening in the younger/lower-income end of the labor market are driving this story. Additionally, average hours have risen in some lower-paid industries, which is also boosting pay packets."
+      ],
+      "pdf": "https://institute.bankofamerica.com/content/dam/economic-insights/monthly-employment-report-september-2026.pdf",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://x.com/dailychartbook/status/2107395573296791617",
+      "source": "@dailychartbook",
+      "section": "Daily Chartbook",
+      "title": "We have yet to see the uncertainty and extreme cross-asset volatility spill over into the equity vol market",
+      "dek": "Our US Vol Panic Index is still a sub 2/10. -Cullen Morgan, Goldman Sachs",
+      "published": "2026-10-06",
+      "themes": [
+        "us-stocks"
+      ],
+      "score": 8,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "07-1.jpg",
+          "caption": "Daily Chartbook \u00b7 6 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://x.com/dailychartbook/status/2107387763217547565",
+      "source": "@dailychartbook",
+      "section": "Daily Chartbook",
+      "title": "CFTC data through 29 September shows that non-dealers have sold SPX futures for five of the last six weeks",
+      "dek": "Over that timeframe they have sold $68bn worth of futures. That marks one of the most aggressive bouts of selling on record. -Cullen Morgan, Goldman Sachs",
+      "published": "2026-10-06",
+      "themes": [
+        "us-stocks"
+      ],
+      "score": 8,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "08-1.jpg",
+          "caption": "Daily Chartbook \u00b7 6 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/markets/smid-cap-outlook",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Markets",
+      "title": "SMID-Cap Outlook: The Revival Looks Set to Continue",
+      "dek": "The stock market is broadening as investors rotate away from the crowded mega-cap space and into the small- and mid-cap universe. What\u2019s driving this shift?",
+      "published": "2026-10-05",
+      "themes": [
+        "us-stocks"
+      ],
+      "score": 36,
+      "points": [
+        "Small- and mid-cap (SMID) stocks are rebounding, with the Russell 2500 Index outpacing larger-cap benchmarks like the S&P 500.",
+        "This dynamic is playing out in developed markets (DM); conversely, SMID caps have underperformed in emerging markets (EM) year to date.",
+        "J.P. Morgan Global Research expects the SMID-cap revival to continue in the short term thanks to five reasons: improving fundamentals, depressed positioning, trough technicals, geopolitical tailwinds and record valuation discounts."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://x.com/Bluekurtic/status/2106442969998094488",
+      "source": "@Bluekurtic",
+      "section": "Bluekurtic Market Insights",
+      "title": "How the S&P 500 has performed following the launch of ChatGPT, compared with the equivalent period after\u2026",
+      "dek": "How the S&P 500 has performed following the launch of ChatGPT, compared with the equivalent period after the launch of Netscape.",
+      "published": "2026-10-03",
+      "themes": [
+        "us-stocks"
+      ],
+      "score": 24,
+      "points": [],
+      "pdf": "",
+      "new": true,
+      "charts": [
+        {
+          "file": "10-1.jpg",
+          "caption": "Bluekurtic Market Insights \u00b7 3 Oct 2026"
+        }
+      ]
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/commodities/iran-us-tensions-market-effect",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Commodities",
+      "title": "Economic Impact of Iran Conflict on Oil, Gold and More",
+      "dek": "With $100/bbl crude, commodities markets are repricing risk in real time \u2014 with some surprising results.",
+      "published": "2026-10-02",
+      "themes": [
+        "metals",
+        "oil"
+      ],
+      "score": 28,
+      "points": [
+        "The U.S.\u2013Israel military operation against Iran has led to dramatic seesaws in oil markets, with Brent crude prices elevated for much of the year.",
+        "Gold\u2019s status as a safe haven has been tested during the Iran conflict, though J.P. Morgan Global Research believes structural drivers \u2014 including central bank buying and broader de-dollarization \u2014 are still intact.",
+        "As with oil, aluminum prices could be affected by the status of the Strait of Hormuz following attacks on key Middle Eastern smelters, with an \u201cinvisible\u201d aluminum deficit potentially working its way through the supply chain.",
+        "Overall, the conflict\u2019s effect on global growth may prove less severe than initially feared, with J.P. Morgan economists expressing cautious optimism that a cyclical upturn could continue."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    },
+    {
+      "url": "https://www.jpmorgan.com/insights/global-research/markets/india-stock-market-outlook",
+      "source": "J.P. Morgan",
+      "section": "Global Research \u00b7 Markets",
+      "title": "What is the outlook for India\u2019s stock market?",
+      "dek": "As global investors trim or diversify away from AI, Indian stocks are emerging as the world\u2019s largest liquid AI hedge. Explore India\u2019s equity market outlook and the three macro factors that will likely shape it.",
+      "published": "2026-09-15",
+      "themes": [
+        "us-stocks",
+        "global"
+      ],
+      "score": 26,
+      "points": [
+        "India's equity market is starting to emerge as an \u201cAI hedge\u201d \u2014 a liquid, large-weight market that global investors can rotate into when they trim or diversify away from volatile AI cycles.",
+        "Earnings have been the missing engine for two years but are finally picking up, with large caps joining the recovery in mid and small caps.",
+        "Oil prices, global bond yields and El Ni\u00f1o are the key macroeconomic factors that will likely shape the outlook not only for the second half of 2026 but also into 2027."
+      ],
+      "pdf": "",
+      "new": false,
+      "charts": []
+    }
+  ],
+  "daily_insights": [
+    {
+      "title": "What makes quantum so powerful also makes it challenging",
+      "date": "2026-10-22",
+      "url": "https://institute1.bofa.com/C?q=uS1PETKdutU"
+    },
+    {
+      "title": "Trucker shortage drives wages higher",
+      "date": "2026-10-21",
+      "url": "https://institute1.bofa.com/C?q=BHTYVIH3y2k"
+    },
+    {
+      "title": "More families are paying >$2000 per month on child care",
+      "date": "2026-10-20",
+      "url": "https://institute1.bofa.com/C?q=eBYUyyNxocg"
+    },
+    {
+      "title": "Location matters when it comes to insurance payment growth",
+      "date": "2026-10-19",
+      "url": "https://institute1.bofa.com/C?q=t-U6U8gD5qg"
+    },
+    {
+      "title": "In Manhattan, high prices lift spending growth at restaurants",
+      "date": "2026-10-16",
+      "url": "https://institute1.bofa.com/C?q=PIGpEAu8PRE"
+    },
+    {
+      "title": "Q3 profit growth strongest for mid-sized construction firms",
+      "date": "2026-10-15",
+      "url": "https://institute1.bofa.com/C?q=V2MevCxaT4s"
+    },
+    {
+      "title": "Lower- and middle-income lead the way in beauty spending",
+      "date": "2026-10-14",
+      "url": "https://institute1.bofa.com/C?q=TFfLeupqhrE"
+    },
+    {
+      "title": "More buy now, pay later, but not an alarming amount",
+      "date": "2026-10-13",
+      "url": "https://institute1.bofa.com/C?q=D1OJBCxDGOo"
+    },
+    {
+      "title": "Broad-based retail spending strength persisted in September",
+      "date": "2026-10-12",
+      "url": "https://institute1.bofa.com/C?q=MObXmaEaLVM"
+    },
+    {
+      "title": "Consumers are still spending despite higher gas prices",
+      "date": "2026-10-09",
+      "url": "https://institute1.bofa.com/C?q=Civae3PV8Bk"
+    },
+    {
+      "title": "Rising hours may be supporting lower-paid paycheck growth",
+      "date": "2026-10-08",
+      "url": "https://institute1.bofa.com/C?q=BSU0TLKig7w"
+    },
+    {
+      "title": "Lower-income wage growth cooled, but remains ahead",
+      "date": "2026-10-07",
+      "url": "https://institute1.bofa.com/C?q=a6e3e12cR2g"
+    },
+    {
+      "title": "Household wealth is concentrated among older Americans",
+      "date": "2026-10-06",
+      "url": "https://institute1.bofa.com/C?q=128dFfdTyu4"
+    },
+    {
+      "title": "USDA projects lower global grain imports despite El Ni\u00f1o risk",
+      "date": "2026-10-05",
+      "url": "https://institute1.bofa.com/C?q=cviwbH3y53I"
+    },
+    {
+      "title": "Ready player Z: 28% of Gen Z spend on gaming",
+      "date": "2026-10-02",
+      "url": "https://institute1.bofa.com/C?q=30dc0yH4jQE"
+    },
+    {
+      "title": "Consumption patterns change as the population ages",
+      "date": "2026-10-01",
+      "url": "https://institute1.bofa.com/C?q=JAlqfGn29Us"
+    },
+    {
+      "title": "Iran conflict boosts US role in global fuel markets",
+      "date": "2026-09-30",
+      "url": "https://institute1.bofa.com/C?q=NBKXDlpe9ws"
+    },
+    {
+      "title": "Nuclear power isn\u2019t one-size-fits-all",
+      "date": "2026-09-29",
+      "url": "https://institute1.bofa.com/C?q=BoBKu75hrB8"
+    },
+    {
+      "title": "Mid-sized firms\u2019 AI spending growth peaked in August",
+      "date": "2026-09-28",
+      "url": "https://institute1.bofa.com/C?q=VbNJCHEYOUA"
+    },
+    {
+      "title": "Gen Z and younger Millennials roll the dice on games",
+      "date": "2026-09-25",
+      "url": "https://institute1.bofa.com/C?q=6NnqBiilfCQ"
+    },
+    {
+      "title": "Small firms lead mid-sized firms in profitability growth",
+      "date": "2026-09-24",
+      "url": "https://institute1.bofa.com/C?q=WacBwe9bn3I"
+    },
+    {
+      "title": "\u201cFunflation\u201d in hobbies hasn\u2019t stopped purchases yet",
+      "date": "2026-09-23",
+      "url": "https://institute1.bofa.com/C?q=QMcb2FdKpH4"
+    },
+    {
+      "title": "Rising electricity demand could keep energy bills elevated",
+      "date": "2026-09-22",
+      "url": "https://institute1.bofa.com/C?q=DtN0V0Gwqqw"
+    },
+    {
+      "title": "Younger generations have less borrowing capacity",
+      "date": "2026-09-21",
+      "url": "https://institute1.bofa.com/C?q=wDpO-TvySuk"
+    },
+    {
+      "title": "El Ni\u00f1o: A consumer tailwind, but a weather risk",
+      "date": "2026-09-18",
+      "url": "https://institute1.bofa.com/C?q=w4v7pfTxGiQ"
+    },
+    {
+      "title": "Utility bill inflation differs across the country",
+      "date": "2026-09-17",
+      "url": "https://institute1.bofa.com/C?q=FT-65JVpZV0"
+    },
+    {
+      "title": "Energy bills increase faster than utility prices",
+      "date": "2026-09-16",
+      "url": "https://institute1.bofa.com/C?q=v7OwJdee8WI"
+    },
+    {
+      "title": "Spending and transactions tell a nuanced consumer story",
+      "date": "2026-09-15",
+      "url": "https://institute1.bofa.com/C?q=AueMLvKNtLE"
+    },
+    {
+      "title": "Consumer spending remained hot throughout the summer",
+      "date": "2026-09-14",
+      "url": "https://institute1.bofa.com/C?q=ilNGEOGaiRo"
+    }
+  ]
+}
