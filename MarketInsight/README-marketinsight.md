@@ -1,26 +1,32 @@
 # Market Insight
 
-A dated brief built from the public research of **J.P. Morgan Global Research**
-and the **Bank of America Institute**, and from the charts a handful of research
-desks post on **X**, filtered to six subjects — the US stock market, US
-macroeconomics, the US dollar, oil, metals and global markets — with the figures
-lifted out of the source.
+A daily brief, built at **07:00 ET**, of everything a fixed list of X accounts
+posted in the previous 24 hours, sorted under six subjects — the US stock
+market, US macroeconomics, the US dollar, oil, metals and global markets — plus
+an *Other* section for anything off-topic, with each post's charts inlined. No
+post or chart is printed twice.
 
 ```
-python market_insight.py                 # build today's brief
-python market_insight.py --days 60       # widen the recency window (default 45)
-python market_insight.py --per-theme 6   # more notes per subject (default 4)
-python market_insight.py --no-cache      # ignore cached pages
-python market_insight.py --render-only   # rebuild every page from stored data
-python market_insight.py --reindex       # rebuild x_seen.json from the editions on disk
+python x_collect.py                          # fill x_inbox.json from the X API (last 24h)
+python market_insight.py --hours 24          # build today's brief from it
+python market_insight.py --days 60           # or: a date window instead of an hour window
+python market_insight.py --render-only       # rebuild every page from stored data
+python market_insight.py --reindex           # rebuild x_seen.json from the editions on disk
 ```
 
 Requires Python 3.9+ and `pip install -r requirements-marketinsight.txt`.
 
-It also needs to reach `www.jpmorgan.com` and `institute.bankofamerica.com`
-directly. Behind a proxy that filters outbound hosts, both must be allowlisted —
-otherwise every fetch fails and the run ends with `nothing matched`, which looks
-identical to a quiet week.
+Collection uses the official X API v2 and needs a bearer token from
+developer.x.com with read access to user timelines (a paid tier). It is read
+from `X_BEARER_TOKEN`, or from the login keychain, which is where the launchd
+job finds it:
+
+```
+security add-generic-password -s marketinsight-x -a bearer -w '<token>'
+```
+
+Before 11 November 2026 the brief also scraped J.P. Morgan Global Research and
+the Bank of America Institute; those editions still render as they were built.
 
 ## What it produces
 
@@ -75,10 +81,10 @@ claiming to have been built months after it was.
 Keeping the figures matters more than it looks: a source PDF can be revised or
 withdrawn, and once it is, a chart that was not saved cannot be recovered.
 
-## The weekly run
+## The daily run
 
-`run-weekly.sh` builds an edition, commits it and pushes it. It is driven by
-launchd every Monday at 07:00:
+`run-daily.sh` collects the last 24 hours from X, builds that day's edition,
+commits it and pushes it. It is driven by launchd:
 
 ```
 cp com.avi.marketinsight.plist ~/Library/LaunchAgents/
@@ -87,52 +93,45 @@ launchctl kickstart -p gui/$UID/com.avi.marketinsight   # run it now
 launchctl bootout gui/$UID/com.avi.marketinsight        # stop scheduling it
 ```
 
-Output goes to `~/Library/Logs/marketinsight-weekly.log`.
+Output goes to `~/Library/Logs/marketinsight-daily.log`.
 
-`StartCalendarInterval` is local time and follows the clocks, so it stays at
-07:00 through the daylight-saving change — a UTC cron would drift by an hour.
-If the Mac is asleep on Monday morning, launchd runs the job when it next wakes
-rather than skipping the week. It does need the machine to be on: a Mac that
-stays shut all Monday misses that edition, and the following run builds from
-that day rather than backfilling.
+The Mac keeps London time, and the US and UK change clocks on different
+weekends, so 07:00 ET is 12:00 in London most of the year and 11:00 for a few
+weeks in spring and autumn. launchd fires at both, and the script decides in ET:
+before 07:00 it exits, and once today's edition is committed every later call
+exits too. If the Mac is asleep, launchd runs the job when it next wakes; the
+window is still the 24 hours before that moment, and the ledger stops anything
+from the previous edition reappearing. A Mac that stays shut all day misses
+that edition.
 
-Anything that stops the run raises a macOS notification as well as logging it.
-A silent failure is the worst outcome here: the page simply goes on showing
-last week's edition and nothing says otherwise, which is exactly how an earlier
-scheduled version went unnoticed for a fortnight. A missed Monday leaves no
-trace of its own either — the job was not there to complain — so the next run
-that works reports the gap.
+Anything that stops the run raises a macOS notification as well as logging it:
+no token, an X API error, or a build that finds nothing. A silent failure is the
+worst outcome here — the page simply goes on showing yesterday's edition. A
+missed day leaves no trace of its own, so the next run that works reports a gap
+of more than two days.
 
-The X step is not part of this. Collecting posts needs a signed-in browser, so
-the weekly job cannot do it unattended — it builds from whatever `x_inbox.json`
-is already on disk. Refresh the inbox before the run: it is now the brief's only source, so a
-Monday run against a stale inbox finds nothing new, fails the three-note guard
-and raises a notification rather than committing an empty edition.
-
-The job refuses to commit a bad scrape. Fewer than three notes, or no charts at
-all, and it logs the failure and stops — a broken scrape ends with `nothing
-matched`, which on the page is indistinguishable from a quiet week, and a
-missing edition is easier to notice than a hollow one. It stages the edition
-data and archive index only, never source, and a second run on a day already
-built is detected and skipped rather than committed again.
+The job refuses to commit a hollow edition: fewer than three posts, or no charts
+at all, and it logs the failure and stops. It stages the edition data, the
+archive index and `x_seen.json` — the ledger that prevents repeats — never
+source, and a second run on a day already built is skipped rather than
+committed again.
 
 ## The published pages
 
 Every edition is published at a permanent URL of its own, and keeps it. Which
 edition lives where is recorded in `published.json`, committed alongside the
 data, so a later run republishes to the same address instead of minting a
-second copy of the same week.
+second copy of the same day.
 
 The archive is the standing page: it is the one address that never changes and
 always lists everything, newest first. Each edition links back to it, which is
 the only cross-link that cannot go stale — listing sibling editions inside a
 published page would be wrong the moment another one appeared.
 
-A scheduled cloud agent does this each Monday at 09:00 UTC, an hour or two
-after the Mac has pushed. It renders the pages from stored data, mints a URL
-for the new edition, commits that URL to `published.json`, and republishes the
-archive. It never scrapes: the two research sites are blocked by that
-environment's proxy, and this job does not need them — only GitHub and PyPI.
+A scheduled cloud agent does this every day at 13:00 UTC, an hour or two after
+the Mac has pushed. It renders the pages from stored data, mints a URL for the
+new edition, commits that URL to `published.json`, and republishes the archive.
+It never collects: it needs only GitHub and PyPI.
 
 Artifacts are private until shared from the page's own share menu.
 
@@ -183,33 +182,19 @@ skipped.
 Editions built before the switch still hold desk notes in their `report.json`
 and render exactly as before.
 
-They matter because they are quick in a way a research note is not: a chart of
-Tuesday's PCE print appears on Tuesday, while the desk's note on it lands a
-fortnight later, if at all. Several of them are also a window onto desks that
-publish nothing free of their own — Strategas, NDR, Deutsche Bank — because
-`@dailychartbook` reposts those exhibits with attribution.
+Every post from these accounts in the window is shown — nothing is capped per
+subject or per account. Reposts and replies are not collected; quote posts are.
 
-### Why there is a collector
+### How posts are collected
 
-The rest of this program discovers its material by walking a sitemap and
-fetching pages. That does not work on X: a profile timeline is behind an auth
-wall and renders in the browser, so an anonymous GET returns a shell with no
-posts in it. A browser signed in as the reader is the only way to see them.
+`x_collect.py` looks the accounts up once per run, then reads each timeline
+since the start of the window through the API (`/2/users/:id/tweets`, reposts
+and replies excluded) and writes `x_inbox.json`: id, ET timestamp, full text
+(long posts included) and the key of each attached photo.
 
-So collection is split in two, along the line of what actually needs the login:
-
-- **The post metadata** — id, timestamp, text, and the key of each figure —
-  comes from a browser-assisted pass over the followed timelines, which writes
-  `x_inbox.json`.
-- **The figures themselves** need no login at all. `pbs.twimg.com` serves them
-  to anyone, so the build fetches them like every other chart in this file,
-  through the same cached, rate-limited `Fetcher`.
-
-This is why the inbox carries media *keys* rather than image bytes, and why the
-build still works unattended: given an inbox, `market_insight.py` needs nothing
-from X that an ordinary HTTP client cannot get. Without one it prints a line
-saying so and there is nothing to build — with the desks gone, the inbox is the
-brief's only source.
+The figures are not in the inbox. `pbs.twimg.com` serves them to anyone, so the
+build fetches them by key through the same cached `Fetcher` it uses for
+everything else, and they land in the edition's `assets/`.
 
 `x_inbox.json` is not in version control. It is a staging area rather than a
 record: what was actually printed is in the edition, and what has been spent is
@@ -421,7 +406,7 @@ July brief.
   to the desk's own summary line.
 - **Keyword scoring is not comprehension.** It is tuned against what these two
   desks actually publish and will need revisiting if either changes its house
-  style. `--days` and `--per-theme` are the dials. The vocabulary carries each
+  style. `--hours` and `--days` are the dials. The vocabulary carries each
   subject twice over, because the desks and the accounts do not write alike: a
   desk writes "the stock market" and "emerging markets", while an account
   writes SPX, XLK, FTSE, Ibovespa. Terms match on word boundaries — without

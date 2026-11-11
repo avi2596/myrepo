@@ -42,6 +42,7 @@ from functools import lru_cache
 from itertools import groupby
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
+from zoneinfo import ZoneInfo
 from urllib.parse import urlparse
 
 import requests
@@ -171,6 +172,13 @@ THEMES: dict[str, dict] = {
             "global growth": 2, "world economy": 2, "cross-border": 1,
             "export": 1, "import": 1,
         },
+    },
+    # Not a subject anyone scores into: a post that clears none of the six
+    # lands here, so a channel's day is shown whole rather than filtered.
+    "other": {
+        "label": "Other",
+        "dot": "#7c7c7c",
+        "terms": {},
     },
 }
 
@@ -365,6 +373,7 @@ X_FOLLOWED = {h.lower() for h in X_ACCOUNTS}
 # is why the inbox carries media keys rather than image bytes and the fetch
 # below is an ordinary cached GET like every other in this file.
 X_INBOX = HERE / "x_inbox.json"
+ET = ZoneInfo("America/New_York")
 X_SEEN = HERE / "x_seen.json"
 X_MEDIA = "https://pbs.twimg.com/media/{key}?format={fmt}&name=large"
 MAX_CHARTS_PER_POST = 2
@@ -649,7 +658,8 @@ def x_split(text: str) -> tuple[str, str]:
     return (head.rstrip(" .") or tidy(text)[:110]), rest
 
 
-def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Article]:
+def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True,
+                  hours: int | None = None) -> list[Article]:
     """Posts from the followed accounts that still have something to say.
 
     Everything already spent is dropped before a single image is fetched, so a
@@ -667,6 +677,10 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
         return []
 
     cutoff = date.today() - timedelta(days=days)
+    # The daily run asks for an exact window instead: the last N hours, read in
+    # ET because that is how the collector writes each post's timestamp.
+    since = (datetime.now(ET).replace(tzinfo=None) - timedelta(hours=hours)
+             if hours else None)
     # Running twice in a day rebuilds that day's edition in place, so what the
     # earlier run retired against today is not spent — it is this edition's own
     # content, and holding it back would empty the page on the second run.
@@ -694,7 +708,14 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
             published = date.fromisoformat(str(post.get("ts", ""))[:10])
         except ValueError:
             continue
-        if published < cutoff:
+        if since is not None:
+            try:
+                stamp = datetime.fromisoformat(str(post.get("ts", ""))[:16])
+            except ValueError:
+                continue
+            if stamp < since:
+                continue
+        elif published < cutoff:
             continue
         if f"post:{pid}" in seen:
             drop("post already used")
@@ -728,7 +749,7 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
                        "dek": art.dek.lower(), "keywords": "", "body": text.lower()},
                  floor=X_FLOOR)
         if not art.themes:
-            continue
+            art.themes = ["other"]
 
         offered = post.get("media", [])[:MAX_CHARTS_PER_POST]
         for item in offered:
@@ -780,23 +801,16 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
 
 # ---------------------------------------------------------------- selection
 
-def gather(fetch: Fetcher, days: int, per_theme: int, verbose: bool = True) -> tuple[list[Article], list[dict]]:
-    """Every fresh post from the followed accounts that lands on a theme."""
-    posts = parse_x_posts(fetch, days, verbose=verbose)
+def gather(fetch: Fetcher, days: int, hours: int | None = None,
+           verbose: bool = True) -> tuple[list[Article], list[dict]]:
+    """Every fresh post from the followed accounts in the window.
 
-    # Each theme gets its best few, spread across accounts so one prolific
-    # account cannot take a whole subject. A post filed under the theme
-    # outranks one that merely touches it, and a post with a chart outranks
-    # one without — the charts are what the brief is for.
-    chosen: dict[str, Article] = {}
-    for theme in THEME_ORDER:
-        ranked = sorted((a for a in posts if theme in a.themes),
-                        key=lambda a: (a.themes[0] == theme, len(a.charts), a.published, a.score),
-                        reverse=True)
-        for art in spread_by_account(ranked, per_theme):
-            chosen.setdefault(art.url, art)
-
-    picked = sorted(chosen.values(), key=lambda a: (a.published, a.score), reverse=True)
+    Nothing is capped per subject or per account: the brief is each channel's
+    day, shown whole. What keeps it from repeating is the ledger, applied in
+    parse_x_posts and again to the figures here.
+    """
+    posts = parse_x_posts(fetch, days, verbose=verbose, hours=hours)
+    picked = sorted(posts, key=lambda a: (a.published, a.score), reverse=True)
     shed = drop_printed_figures(picked)
     if verbose and shed:
         print(f"{shed} figure(s) held back, already printed in an earlier edition",
@@ -1159,6 +1173,8 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
     tiles = []
     for theme in THEME_ORDER:
         n = sum(1 for a in articles if theme in a.themes)
+        if theme == "other" and not n:
+            continue
         inner = (f'<div class="n">{n}</div><div class="l">'
                  f'<span class="dot" style="background:{THEMES[theme]["dot"]}"></span>'
                  f'{esc(THEMES[theme]["label"])}</div>')
@@ -1580,8 +1596,9 @@ def main() -> int:
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--days", type=int, default=45,
                     help="how far back a post may have been published (default 45)")
-    ap.add_argument("--per-theme", type=int, default=4,
-                    help="posts to keep per theme (default 4)")
+    ap.add_argument("--hours", type=int, default=None,
+                    help="only posts from the last N hours (overrides --days); "
+                         "the daily run uses 24")
     ap.add_argument("--no-cache", action="store_true", help="ignore cached pages")
     ap.add_argument("--render-only", action="store_true",
                     help="rebuild pages from reports/*/report.json, download nothing")
@@ -1620,7 +1637,7 @@ def main() -> int:
         return 0
 
     fetch = Fetcher(use_cache=not args.no_cache)
-    articles, daily = gather(fetch, args.days, args.per_theme, verbose=not args.quiet)
+    articles, daily = gather(fetch, args.days, hours=args.hours, verbose=not args.quiet)
     if not articles:
         print("nothing matched — try a longer --days window", file=sys.stderr)
         return 1

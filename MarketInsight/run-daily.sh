@@ -1,8 +1,12 @@
 #!/bin/bash
 #
-# The Monday run: build this week's edition, commit it, push it.
+# The daily run, 07:00 ET: collect the last 24 hours from X, build that day's
+# edition, commit it, push it.
 #
-# Driven by launchd (see com.avi.marketinsight.plist). launchd hands a job
+# Driven by launchd (see com.avi.marketinsight.plist). This Mac keeps London
+# time, and the US and UK change clocks on different weekends, so 07:00 ET is
+# 11:00 or 12:00 here. launchd fires at both; the guard below runs only the
+# first call at or after 07:00 ET that finds today's edition not yet committed. launchd hands a job
 # almost no environment — no PATH worth the name, no working directory, no ssh
 # agent — so everything here is resolved from the script's own location and
 # every path is absolute.
@@ -32,12 +36,22 @@ notify() {
 }
 die() { log "FAILED: $*"; notify "Market Insight failed" "$*"; exit 1; }
 
-log "=== Market Insight weekly run ==="
+log "=== Market Insight daily run ==="
 [ -n "$PYTHON" ] && [ -x "$PYTHON" ] || die "no usable Python (looked for $REPO/.venv/bin/python)"
 log "python: $PYTHON ($("$PYTHON" --version 2>&1))"
 
 TODAY="$(date '+%Y-%m-%d')"
 EDITION="$HERE/reports/${TODAY:0:4}/$TODAY"
+
+ET_HOUR="$(TZ=America/New_York date '+%H')"
+if [ "$((10#$ET_HOUR))" -lt 7 ]; then
+    log "it is ${ET_HOUR}:xx ET, before 07:00 — not yet"
+    exit 0
+fi
+if git -C "$REPO" ls-files --error-unmatch "MarketInsight/reports/${TODAY:0:4}/$TODAY/report.json" >/dev/null 2>&1; then
+    log "today's edition is already committed — nothing to do"
+    exit 0
+fi
 
 # Don't commit on top of someone else's work in progress.
 BRANCH="$(git -C "$REPO" rev-parse --abbrev-ref HEAD)"
@@ -45,9 +59,12 @@ if [ -n "$(git -C "$REPO" diff --cached --name-only)" ]; then
     die "something is already staged in the repo — leaving it alone"
 fi
 
-log "building edition for $TODAY"
 cd "$HERE"
-"$PYTHON" market_insight.py --quiet || die "market_insight.py exited non-zero"
+log "collecting the last 24 hours from X"
+"$PYTHON" x_collect.py --hours 24 || die "x_collect.py failed — see the log for the X API error"
+
+log "building edition for $TODAY"
+"$PYTHON" market_insight.py --hours 24 --quiet || die "market_insight.py exited non-zero (nothing new in the last 24h?)"
 
 # Did it actually produce something worth keeping?
 [ -f "$EDITION/report.json" ] || die "no report.json for $TODAY — the run produced nothing"
@@ -55,10 +72,10 @@ NOTES="$("$PYTHON" -c "import json,sys; print(len(json.load(open(sys.argv[1]))['
 CHARTS="$(find "$EDITION/assets" -type f \( -name '*.png' -o -name '*.svg' \) 2>/dev/null | wc -l | tr -d ' ')"
 log "produced $NOTES notes, $CHARTS charts"
 
-[ "$NOTES" -ge 3 ] || die "only $NOTES notes — treating as a broken scrape, not committing"
-[ "$CHARTS" -ge 1 ] || die "no charts extracted — treating as a broken scrape, not committing"
+[ "$NOTES" -ge 3 ] || die "only $NOTES posts in the last 24h — treating as a broken collection, not committing"
+[ "$CHARTS" -ge 1 ] || die "no charts in the last 24h — treating as a broken collection, not committing"
 
-# A Monday that never ran leaves no trace of its own — the job simply wasn't
+# A day that never ran leaves no trace of its own — the job simply wasn't
 # there to complain. The gap only becomes visible on the next run that works,
 # so that run is where it gets reported.
 PREV="$(find "$HERE/reports" -mindepth 2 -maxdepth 2 -type d -exec basename {} \; 2>/dev/null \
@@ -66,7 +83,7 @@ PREV="$(find "$HERE/reports" -mindepth 2 -maxdepth 2 -type d -exec basename {} \
 if [ -n "$PREV" ]; then
     GAP=$(( ( $(date -j -f '%Y-%m-%d' "$TODAY" '+%s') \
              - $(date -j -f '%Y-%m-%d' "$PREV" '+%s') ) / 86400 ))
-    if [ "$GAP" -gt 10 ]; then
+    if [ "$GAP" -gt 2 ]; then
         log "note: $GAP days since the previous edition ($PREV) — a run was missed"
         notify "Market Insight gap" "$GAP days since the last edition ($PREV)"
     fi
@@ -77,10 +94,11 @@ if [ "$BRANCH" != "main" ]; then
     exit 0
 fi
 
-# Only the edition data and the archive index — never the source. Staging the
+# Only the edition data, the archive index and the x_seen.json ledger — never
+# the source. Staging the
 # whole folder would sweep up whatever happened to be sitting there unfinished
 # and commit it under an edition's name.
-git -C "$REPO" add MarketInsight/reports MarketInsight/index.html
+git -C "$REPO" add MarketInsight/reports MarketInsight/index.html MarketInsight/x_seen.json
 STAGED="$(git -C "$REPO" diff --cached --name-only)"
 if [ -z "$STAGED" ]; then
     log "no change to commit (already built today) — done"
@@ -115,7 +133,7 @@ print(', '.join(seen))
 git -C "$REPO" commit -q -m "Market Insight: edition for $(date '+%-d %B %Y')" -m \
 "$NOTES notes, $CHARTS charts. Subjects covered: $SUBJECTS.
 
-Built automatically by run-weekly.sh." || die "commit failed"
+Built automatically by run-daily.sh." || die "commit failed"
 
 log "committed $(git -C "$REPO" rev-parse --short HEAD)"
 
