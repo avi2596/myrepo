@@ -105,10 +105,9 @@ that works reports the gap.
 
 The X step is not part of this. Collecting posts needs a signed-in browser, so
 the weekly job cannot do it unattended — it builds from whatever `x_inbox.json`
-is already on disk. Refresh the inbox before the run and that Monday's brief
-carries the week's charts; leave it and the brief is the two desks only, which
-is a quieter page but not a broken one. Nothing in the automated path depends on
-reaching X.
+is already on disk. Refresh the inbox before the run: it is now the brief's only source, so a
+Monday run against a stale inbox finds nothing new, fails the three-note guard
+and raises a notification rather than committing an empty edition.
 
 The job refuses to commit a bad scrape. Fewer than three notes, or no charts at
 all, and it logs the failure and stops — a broken scrape ends with `nothing
@@ -165,16 +164,24 @@ for this — several of these templates mark neither line as bold.
 
 ## The X accounts
 
-Six research accounts are read alongside the two desks:
+Since 11 November 2026 the brief reads **only** these X accounts — the J.P.
+Morgan and Bank of America Institute scrapers have been removed. The list lives
+in `X_ACCOUNTS` in `market_insight.py`; a post in the inbox from anyone else is
+skipped.
 
-| account | what it publishes |
-| --- | --- |
-| `@NautilusCap` | seasonal composites for indices and single names |
-| `@RenMacLLC` | Renaissance Macro's own cuts of the macro releases |
-| `@SubuTrade` | systematic equity studies |
-| `@CarsonResearch` | the *Facts vs. Feelings* podcast, data points in the post |
-| `@dailychartbook` | the day's best charts from across the sell side |
-| `@Bluekurtic` | breadth and seasonality studies |
+| account |
+| --- |
+| `@dailychartbook` |
+| `@Bluekurtic` |
+| `@KobeissiLetter` |
+| `@TedHZhang` |
+| `@Mayhem4Markets` |
+| `@RyanDetrick` |
+| `@FactSet` |
+| `@RenMacLLC` |
+
+Editions built before the switch still hold desk notes in their `report.json`
+and render exactly as before.
 
 They matter because they are quick in a way a research note is not: a chart of
 Tuesday's PCE print appears on Tuesday, while the desk's note on it lands a
@@ -192,7 +199,7 @@ posts in it. A browser signed in as the reader is the only way to see them.
 So collection is split in two, along the line of what actually needs the login:
 
 - **The post metadata** — id, timestamp, text, and the key of each figure —
-  comes from a browser-assisted pass over the six timelines, which writes
+  comes from a browser-assisted pass over the followed timelines, which writes
   `x_inbox.json`.
 - **The figures themselves** need no login at all. `pbs.twimg.com` serves them
   to anyone, so the build fetches them like every other chart in this file,
@@ -201,8 +208,8 @@ So collection is split in two, along the line of what actually needs the login:
 This is why the inbox carries media *keys* rather than image bytes, and why the
 build still works unattended: given an inbox, `market_insight.py` needs nothing
 from X that an ordinary HTTP client cannot get. Without one it prints a line
-saying so and builds the brief from the two desks alone — a missing inbox is a
-quiet week on X, not a failure.
+saying so and there is nothing to build — with the desks gone, the inbox is the
+brief's only source.
 
 `x_inbox.json` is not in version control. It is a staging area rather than a
 record: what was actually printed is in the edition, and what has been spent is

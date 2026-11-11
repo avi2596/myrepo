@@ -1,43 +1,30 @@
 """
-Today's read from two research desks, on one page.
+This week's charts from the research accounts followed on X, on one page.
 
-J.P. Morgan Global Research and the Bank of America Institute both publish in
-the open, and both bury the good part. J.P. Morgan hangs its charts inside long
-article pages; the Institute puts a short summary on the web and keeps every
-exhibit in a PDF nobody opens. This script goes and gets both, keeps only the
-work that touches the six things worth watching from a US desk — the stock
-market, the macro data, the dollar, oil, metals and the wider world — and lays
-it out as a dated brief with the charts lifted from the source.
+The brief reads only the X accounts listed in X_ACCOUNTS, keeps the posts that
+touch the six things worth watching from a US desk — the stock market, the
+macro data, the dollar, oil, metals and the wider world — and lays them out as
+a dated brief with each post's figures inlined.
 
     python market_insight.py                  # build today's brief
     python market_insight.py --days 60        # widen the recency window
-    python market_insight.py --no-cache       # ignore the page cache
+    python market_insight.py --no-cache       # ignore the image cache
     python market_insight.py --render-only    # re-render from what's on disk
 
 Each run writes reports/<year>/<date>/ and leaves earlier editions alone, so the
 folder becomes a log and the top-level index gains a link per date. Rerun it on
-the same day and that day's edition is rebuilt in place. Filing by year keeps
-both the folder and the page's own Log navigable once the editions pile up.
+the same day and that day's edition is rebuilt in place.
 
-Discovery goes through each site's sitemap rather than the homepage, because
-the homepages render their cards in the browser and arrive empty. The sitemaps
-carry a lastmod date for every page, which is also the only publication date
-the Institute exposes; J.P. Morgan articles additionally carry their own
-timestamp in a meta tag, and that one is preferred when present.
+X timelines sit behind a login, so posts are not discovered here: a
+browser-assisted collector writes x_inbox.json, and this reads it. The figures
+need no login — pbs.twimg.com serves them to anyone — so they are fetched with
+an ordinary cached GET and inlined as data URIs, which keeps the report a
+single file that can be mailed, archived or published as-is.
 
-The charts are the reason this exists. J.P. Morgan's exhibits are real SVGs
-sitting in the page, so they come across as vectors and stay sharp. The
-Institute's live in the "full analysis" PDF, so that PDF is opened and each
-exhibit is cropped out of it — anchored on the "Exhibit N:" caption above the
-chart and the source line beneath it, which is the pair that reliably brackets
-one figure. Everything is inlined into the HTML as data URIs, so the report is
-a single file that can be mailed, archived or published as-is.
+Editions built before the switch to X-only still carry J.P. Morgan and Bank of
+America Institute notes in their report.json; they render as they always did.
 
-What this cannot do is read anything behind a login, and it does not attempt
-to: both desks put their deep research behind one. What is here is the public
-tier, which is generous enough to be worth reading.
-
-Requires: requests, beautifulsoup4, pymupdf
+Requires: requests, Pillow (optional, for perceptual dedup)
 """
 
 from __future__ import annotations
@@ -55,15 +42,9 @@ from functools import lru_cache
 from itertools import groupby
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 
 import requests
-from bs4 import BeautifulSoup
-
-try:
-    import pymupdf
-except ImportError:                                     # pragma: no cover
-    pymupdf = None
 
 try:
     from PIL import Image
@@ -80,27 +61,6 @@ CACHE = HERE / ".cache"
 UA = ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
 
-JPM_SITEMAP = "https://www.jpmorgan.com/US/en/sitemap.xml"
-JPM_BASE = "https://www.jpmorgan.com"
-BOFA_SITEMAP = ("https://institute.bankofamerica.com/content/institute/"
-                "bank-of-america-institute.sitemap.xml")
-BOFA_BASE = "https://institute.bankofamerica.com"
-
-# The two J.P. Morgan shelves that carry research rather than marketing: the
-# global desk's notes, and the markets-and-economy commentary.
-JPM_SHELVES = ("/insights/global-research/", "/insights/markets-and-economy/")
-
-# Bank of America Institute sections, in the site's own naming. "Daily
-# Insights" is a newsletter with no article pages of its own — its items are
-# read off the hub page instead, further down.
-BOFA_SECTIONS = {
-    "economic-insights": "Economic Insights",
-    "institute-insights": "Institute Insights",
-    "transformation": "Institute Insights",
-    "sustainability": "Institute Insights",
-}
-BOFA_HUBS = ("", "economic-insights", "institute-insights", "transformation")
-
 # Every edition is published at a permanent URL of its own, which never changes
 # once minted — so the archive is the standing address: it is the one page that
 # always lists the newest, and the way back to any older one.
@@ -114,7 +74,6 @@ PUBLISHED = HERE / "published.json"
 CACHE_TTL = 6 * 3600                                    # seconds a page stays fresh
 POLITE_DELAY = 0.4                                      # between network requests
 INLINE_BUDGET = 4_600_000                               # base64 bytes of chart data in one page
-MAX_CHARTS_PER_ARTICLE = 3
 
 # The figure formats an edition can hold. The two desks publish SVG and PNG;
 # X serves JPEG as well, and a JPEG filed as .png would come back from
@@ -320,129 +279,11 @@ class Fetcher:
             time.sleep(1.5 * (attempt + 1))
         return None
 
-    def soup(self, url: str) -> BeautifulSoup | None:
-        raw = self.get(url)
-        return BeautifulSoup(raw.decode("utf-8", "replace"), "html.parser") if raw else None
-
-
-def sitemap_entries(fetch: Fetcher, url: str) -> list[tuple[str, date]]:
-    """(loc, lastmod) pairs out of a sitemap, newest first."""
-    raw = fetch.get(url)
-    if not raw:
-        return []
-    text = raw.decode("utf-8", "replace")
-    out = []
-    for loc, mod in re.findall(r"<loc>(.*?)</loc>\s*<lastmod>(.*?)</lastmod>", text, re.S):
-        try:
-            out.append((loc.strip(), date.fromisoformat(mod.strip()[:10])))
-        except ValueError:
-            continue
-    return sorted(out, key=lambda p: p[1], reverse=True)
-
 
 # ------------------------------------------------------------ text handling
 
-def meta(soup: BeautifulSoup, *names: str) -> str:
-    for name in names:
-        tag = (soup.find("meta", property=name) or soup.find("meta", attrs={"name": name}))
-        if tag and tag.get("content"):
-            return tag["content"].strip()
-    return ""
-
-
 def tidy(text: str) -> str:
     return re.sub(r"\s+", " ", text or "").strip()
-
-
-def strip_suffix(title: str) -> str:
-    """Drop the "| J.P. Morgan Global Research" tail the CMS appends.
-
-    The separator is not always a pipe — a few pages ship with a stray capital
-    I where one was meant — so both spellings are cut.
-    """
-    return re.sub(r"\s*[|I]\s*(J\.?P\.?\s*Morgan|Bank of America)\b.*$", "", title, flags=re.I).strip()
-
-
-BOILERPLATE = re.compile(
-    r"(cookie|privacy|subscribe|newsletter|all rights reserved|these materials|"
-    r"for general information purposes|read our full analysis|opens in a new tab|"
-    r"get the latest|deposit products|member fdic|equal housing|"
-    r"bookmark this|read the latest|check back|updated regularly|"
-    # Several of these pages are webcast transcripts, and their opening
-    # paragraphs are the host saying hello. Real analysis starts later down.
-    r"good (morning|afternoon|evening)|thank you (very much )?for joining|"
-    r"welcome (back )?to|my name is|joining me today|let's get started|"
-    r"thanks for having me|before we (begin|start)|this podcast|"
-    r"speaking on|as a reminder)", re.I)
-
-# Transcript prose gives itself away in the first word or two. A note written
-# to be read does not open a paragraph with "So maybe with that, Steve".
-CONVERSATIONAL = re.compile(
-    r"^(so|yeah|yes|well|right|okay|ok|sure|great|absolutely|exactly|"
-    r"and so|but|now|look|i mean|you know|that's right|thanks)\b[,\s]", re.I)
-
-
-# Deliberately narrow. Broad words like "card" or "rail" also name the
-# containers the Institute wraps its actual copy in, and stripping those
-# leaves a card with nothing to say.
-FURNITURE = re.compile(
-    r"(primary-navigation|mega-?nav|site-?nav|global-?nav|nav-content|menu|"
-    r"promo|teaser|related|subscribe|disclaimer|advert|cookie|breadcrumb|"
-    r"social-share|skip-link)", re.I)
-
-
-def body_text(soup: BeautifulSoup) -> str:
-    main = soup.find("main") or soup.body or soup
-    return tidy(" ".join(p.get_text(" ", strip=True) for p in main.find_all(["p", "li", "h2", "h3"])))
-
-
-def key_points(soup: BeautifulSoup, limit: int = 4) -> list[str]:
-    """The article's own summary, preferring a "key takeaways" list.
-
-    Both desks lead with a short standfirst — J.P. Morgan as a bulleted "Key
-    takeaways" block, the Institute as the opening paragraphs under the
-    headline. Whichever is present, the point is to carry the desk's own words
-    rather than a summary this script invented.
-    """
-    main = soup.find("main") or soup.body or soup
-
-    # Article pages carry promo rails, related-story cards and disclaimers in
-    # the same container as the copy. Take them out first or a card ends up
-    # quoting the bank's advertising back at the reader.
-    main = BeautifulSoup(str(main), "html.parser")
-    for junk in main.find_all(["aside", "nav", "footer", "form"]):
-        junk.decompose()
-    for junk in main.find_all(attrs={"class": FURNITURE}):
-        junk.decompose()
-
-    for head in main.find_all(["h2", "h3", "h4"]):
-        if "key takeaway" in head.get_text(" ", strip=True).lower():
-            for sib in head.find_all_next(["ul", "ol", "p"], limit=6):
-                items = [tidy(li.get_text(" ", strip=True)) for li in sib.find_all("li")]
-                items = [i for i in items if 30 < len(i) < 400]
-                if items:
-                    return items[:limit]
-            break
-
-    paras = [tidy(p.get_text(" ", strip=True)) for p in main.find_all("p")]
-    paras = [p for p in paras if 60 < len(p) < 400]
-
-    # Some of these pages are webcast transcripts end to end. Picking the least
-    # chatty paragraphs out of a conversation still reads as a conversation, so
-    # when a page is mostly dialogue nothing is quoted from it and the card
-    # falls back to the desk's own summary line.
-    if paras and sum(bool(CONVERSATIONAL.match(p)) for p in paras) / len(paras) > 0.2:
-        return []
-
-    out, seen = [], set()
-    for t in paras:
-        key = t[:60].lower()
-        if not BOILERPLATE.search(t) and not CONVERSATIONAL.match(t) and key not in seen:
-            seen.add(key)
-            out.append(t)
-        if len(out) >= limit:
-            break
-    return out
 
 
 @lru_cache(maxsize=None)
@@ -500,326 +341,24 @@ def classify(article: Article, haystacks: dict[str, str],
         article.themes = []
 
 
-# ----------------------------------------------------- J.P. Morgan articles
-
-# Filenames that are furniture rather than findings.
-JPM_SKIP = re.compile(
-    r"(logo|headshot|banner|header|hero|masthead|icon|thumb|tile|avatar|"
-    r"portrait|_bio|profile|footer|badge)", re.I)
-# "graph" but not "graphic": the outlook pages decorate their section heads
-# with icon strips named Core_Themes_Graphic.svg, which are not figures.
-JPM_CHART = re.compile(r"(graph(?!ic)|chart|exhibit|figure|fig[_-]|table|plot)", re.I)
-
-
-def jpm_charts(soup: BeautifulSoup, fetch: Fetcher) -> list[Chart]:
-    """Exhibits out of a J.P. Morgan article.
-
-    The page mixes three kinds of image: the article's own charts, staff
-    portraits, and the cards for unrelated articles at the foot. A file is
-    taken as a chart when its name says so (Graph, Table, Exhibit) or when it
-    carries the long alt text the accessibility team writes for figures —
-    which is itself the best caption available, so it is kept.
-    """
-    charts: list[Chart] = []
-    seen: set[str] = set()
-
-    for img in soup.find_all("img"):
-        src = img.get("src") or img.get("data-src") or ""
-        if not src or "/content/dam/" not in src or JPM_SKIP.search(src):
-            continue
-        alt = tidy(img.get("alt") or "")
-        if not (JPM_CHART.search(src) or len(alt) >= 25):
-            continue
-
-        url = urljoin(JPM_BASE, src)
-        name = Path(urlparse(url).path).name
-        if name in seen:
-            continue
-        seen.add(name)
-
-        raw = fetch.get(url)
-        if not raw or len(raw) < 1200:
-            continue
-        ext = Path(name).suffix.lower()
-        mime = {".svg": "image/svg+xml", ".png": "image/png",
-                ".jpg": "image/jpeg", ".jpeg": "image/jpeg"}.get(ext)
-        if not mime:
-            continue
-
-        caption = alt or re.sub(r"[_-]+", " ", Path(name).stem).strip()
-        charts.append(Chart(caption=caption[:300], mime=mime, data=raw))
-        if len(charts) >= MAX_CHARTS_PER_ARTICLE:
-            break
-    return charts
-
-
-def parse_jpm(url: str, lastmod: date, fetch: Fetcher) -> Article | None:
-    soup = fetch.soup(url)
-    if not soup:
-        return None
-
-    title = strip_suffix(meta(soup, "og:title", "title") or (soup.h1.get_text(" ", strip=True) if soup.h1 else ""))
-    if not title:
-        return None
-
-    # The CMS stamps its own publication time; prefer it over the sitemap's
-    # lastmod, which also moves when a template is touched.
-    published = lastmod
-    stamp = meta(soup, "alg-search-date")
-    if stamp.isdigit():
-        try:
-            published = datetime.fromtimestamp(int(stamp), timezone.utc).date()
-        except (ValueError, OSError):
-            pass
-
-    shelf = url.split("/insights/")[-1].split("/")
-    section = "Global Research" if shelf[0] == "global-research" else "Markets & Economy"
-    if len(shelf) > 2:
-        section += " · " + shelf[1].replace("-", " ").title()
-
-    art = Article(url=url, source="J.P. Morgan", section=section, title=title,
-                  dek=meta(soup, "og:description", "description"), published=published,
-                  points=key_points(soup))
-    classify(art, {
-        "title": title.lower(),
-        "url": url.lower(),
-        "dek": art.dek.lower(),
-        "keywords": meta(soup, "keywords").lower(),
-        "body": body_text(soup).lower()[:20000],
-    })
-    if not art.themes:
-        return None
-    art.charts = jpm_charts(soup, fetch)
-    return art
-
-
-# ------------------------------------------------- Bank of America Institute
-
-EXHIBIT = re.compile(r"^\s*Exhibit\s+\d+\s*[:.]")
-ATTRIBUTION = re.compile(r"^(BANK OF AMERICA INSTITUTE|Source\s*:)", re.I)
-
-
-def pdf_exhibits(raw: bytes, limit: int = MAX_CHARTS_PER_ARTICLE) -> list[Chart]:
-    """Crop the exhibits out of an Institute PDF.
-
-    Every figure in these reports is bracketed the same way: an "Exhibit N:"
-    caption on top and a source or "BANK OF AMERICA INSTITUTE" line at the
-    bottom. Those two lines are what the crop is anchored on, which is far
-    steadier than trying to find the drawing itself — the vector clusters that
-    make up a chart sometimes merge with the rest of the page and swallow it.
-
-    Width comes from the layout: when two captions sit on the same line the
-    page is in two columns and each figure gets half, otherwise it runs the
-    full text measure.
-    """
-    if pymupdf is None:
-        return []
-    charts: list[Chart] = []
-    try:
-        doc = pymupdf.open(stream=raw, filetype="pdf")
-    except Exception:
-        return []
-
-    with doc:
-        for page in doc:
-            rect = page.rect
-            lines = []
-            for block in page.get_text("dict")["blocks"]:
-                for line in block.get("lines", []):
-                    spans = line["spans"]
-                    text = "".join(s["text"] for s in spans).strip()
-                    if text:
-                        # The face is what separates a caption from the chart's
-                        # subtitle beneath it: the Institute sets captions in a
-                        # bold cut and the subtitle in a light one. Comparing
-                        # the font name works whatever those two cuts are, which
-                        # the bold flag does not — several of these templates
-                        # mark neither line as bold.
-                        lines.append((pymupdf.Rect(line["bbox"]), text, spans[0]["font"]))
-
-            captions = [(r, t) for r, t, _ in lines if EXHIBIT.match(t)]
-            if not captions:
-                continue
-            captions.sort(key=lambda c: (round(c[0].y0 / 12), c[0].x0))
-
-            for box, text in captions:
-                row = [c for c in captions if abs(c[0].y0 - box.y0) < 14]
-                two_up = len(row) > 1
-                if two_up and box.x0 >= rect.width / 2:
-                    x0, x1 = rect.width / 2 + 4, rect.width - 38
-                elif two_up:
-                    x0, x1 = box.x0 - 6, rect.width / 2 - 4
-                else:
-                    x0, x1 = box.x0 - 6, rect.width - 38
-
-                below = [c[0].y0 for c in captions if c[0].y0 > box.y0 + 14]
-                limit_y = min(below) - 8 if below else rect.height - 30
-                feet = [r for r, t, _f in lines
-                        if r.y0 > box.y1 and r.y1 <= limit_y + 40
-                        and r.x0 >= x0 - 12 and r.x1 <= x1 + 14 and ATTRIBUTION.match(t)]
-                y1 = max(r.y1 for r in feet) + 6 if feet else limit_y
-                if y1 - box.y0 < 90:                    # too thin to be a figure
-                    continue
-
-                clip = pymupdf.Rect(x0, box.y0 - 6, x1, y1)
-                if clip.width < 80 or clip.height < 80:  # nothing renderable
-                    continue
-                try:
-                    pix = page.get_pixmap(clip=clip, dpi=150)
-                    png = pix.tobytes("png")
-                except Exception:
-                    # A caption near a page edge can still yield a clip MuPDF
-                    # refuses to rasterise; one missing figure is not worth
-                    # losing the rest of the report over.
-                    continue
-                # A caption often wraps onto a second or third line; without
-                # them the figure is labelled with half a sentence. Walk down
-                # the column collecting lines set in the caption's own face,
-                # stopping at the first line that changes face — the subtitle.
-                face = next((f for r, t, f in lines if r == box and t == text), "")
-                below = sorted((l for l in lines if l[0].y0 > box.y0 + 1
-                                and l[0].x0 >= x0 - 12 and l[0].x1 <= x1 + 14),
-                               key=lambda l: l[0].y0)
-                full, cursor = [text], box
-                for rect, line_text, line_face in below:
-                    if rect.y0 > cursor.y1 + 6:         # a gap means a new block
-                        break
-                    if line_face != face or EXHIBIT.match(line_text):
-                        break
-                    full.append(line_text)
-                    cursor = rect
-
-                charts.append(Chart(caption=tidy(" ".join(full))[:300], mime="image/png",
-                                    data=png))
-                if len(charts) >= limit:
-                    return charts
-    return charts
-
-
-def pdf_published(raw: bytes) -> date | None:
-    """The date printed on the front page of an Institute report.
-
-    The web page never states when a note was published, so the sitemap's
-    lastmod has to stand in — except that the PDF puts the real date in its
-    masthead ("23 July 2026"), which is worth preferring when it is there.
-    """
-    if pymupdf is None:
-        return None
-    try:
-        with pymupdf.open(stream=raw, filetype="pdf") as doc:
-            head = doc[0].get_text()[:1500]
-    except Exception:
-        return None
-    hit = re.search(r"\b(\d{1,2})\s+(January|February|March|April|May|June|July|August|"
-                    r"September|October|November|December)\s+(20\d\d)\b", head, re.I)
-    if not hit:
-        return None
-    try:
-        return datetime.strptime(f"{hit.group(1)} {hit.group(2)} {hit.group(3)}",
-                                 "%d %B %Y").date()
-    except ValueError:
-        return None
-
-
-def bofa_listing(fetch: Fetcher) -> dict[str, dict]:
-    """Category and month for each article, read off the Institute's own hubs.
-
-    The article pages themselves never print a date; the cards that link to
-    them do ("Economy … July 2026"), so the hubs are where that comes from.
-    """
-    found: dict[str, dict] = {}
-    month = re.compile(
-        r"(january|february|march|april|may|june|july|august|september|"
-        r"october|november|december)\s+(20\d\d)", re.I)
-
-    for hub in BOFA_HUBS:
-        soup = fetch.soup(f"{BOFA_BASE}/{hub}.html" if hub else BOFA_BASE)
-        if not soup:
-            continue
-        for a in soup.find_all("a", href=True):
-            href = a["href"]
-            if not (href.startswith("/") and href.endswith(".html") and href.count("/") >= 2):
-                continue
-            label = tidy(a.get_text(" ", strip=True))
-            hit = month.search(label)
-            if not hit:
-                continue
-            found[urljoin(BOFA_BASE, href)] = {
-                "month": hit.group(0).title(),
-                "category": label.split()[0],
-            }
-    return found
-
-
-def daily_insights(fetch: Fetcher, days: int) -> list[dict]:
-    """The Daily Insights newsletter items, which exist only as hub cards.
-
-    There are no article pages behind these — each headline links straight to
-    a tracked PDF — so they are carried as a dated one-line list rather than
-    treated as articles.
-    """
-    soup = fetch.soup(f"{BOFA_BASE}/daily-insights.html")
-    if not soup:
-        return []
-    cutoff = date.today() - timedelta(days=days)
-    out = []
-    for anchor in soup.select("a.tile-anchor"):
-        head = anchor.find(class_=re.compile("tile__headline"))
-        eyebrow = anchor.find(class_=re.compile("tile__lead-in"))
-        if not (head and eyebrow):
-            continue
-        try:
-            when = datetime.strptime(tidy(eyebrow.get_text()), "%m-%d-%Y").date()
-        except ValueError:
-            continue
-        if when < cutoff:
-            continue
-        out.append({"title": tidy(head.get_text()), "date": when.isoformat(),
-                    "url": anchor["href"]})
-    return sorted(out, key=lambda d: d["date"], reverse=True)
-
-
-def parse_bofa(url: str, lastmod: date, listing: dict, fetch: Fetcher) -> Article | None:
-    soup = fetch.soup(url)
-    if not soup:
-        return None
-
-    title = strip_suffix(meta(soup, "og:title", "title") or (soup.h1.get_text(" ", strip=True) if soup.h1 else ""))
-    if not title:
-        return None
-
-    slug = urlparse(url).path.lstrip("/").split("/")[0]
-    card = listing.get(url, {})
-    section = BOFA_SECTIONS.get(slug, "Institute Insights")
-    if card.get("month"):
-        section += " · " + card["month"]
-
-    art = Article(url=url, source="BofA Institute", section=section, title=title,
-                  dek=meta(soup, "og:description", "description"), published=lastmod,
-                  points=key_points(soup))
-    classify(art, {
-        "title": title.lower(),
-        "url": url.lower(),
-        "dek": art.dek.lower(),
-        "keywords": meta(soup, "keywords").lower(),
-        "body": body_text(soup).lower()[:20000],
-    })
-    if not art.themes:
-        return None
-
-    link = soup.find("a", href=re.compile(r"\.pdf($|\?)", re.I))
-    if link:
-        art.pdf_url = urljoin(BOFA_BASE, link["href"])
-        raw = fetch.get(art.pdf_url)
-        if raw:
-            art.charts = pdf_exhibits(raw)
-            art.published = pdf_published(raw) or art.published
-    return art
-
-
 # ------------------------------------------------------------------ X charts
 
-# The six desks followed on X. Timelines there are behind an auth wall and
+# The accounts the brief reads, and the only ones. A post in the inbox from
+# anyone else is ignored, so widening or narrowing the brief is an edit here.
+# Matched case-insensitively, since X itself treats handles that way.
+X_ACCOUNTS = (
+    "dailychartbook",
+    "Bluekurtic",
+    "KobeissiLetter",
+    "TedHZhang",
+    "Mayhem4Markets",
+    "RyanDetrick",
+    "FactSet",
+    "RenMacLLC",
+)
+X_FOLLOWED = {h.lower() for h in X_ACCOUNTS}
+
+# Timelines there are behind an auth wall and
 # render in the browser, so this file cannot discover posts the way it walks a
 # sitemap — a browser-assisted collector writes X_INBOX and this reads it. The
 # figures themselves need no login: pbs.twimg.com serves them to anyone, which
@@ -829,7 +368,6 @@ X_INBOX = HERE / "x_inbox.json"
 X_SEEN = HERE / "x_seen.json"
 X_MEDIA = "https://pbs.twimg.com/media/{key}?format={fmt}&name=large"
 MAX_CHARTS_PER_POST = 2
-X_PER_THEME = 3                                         # posts kept per subject
 
 # A post is terse by construction: a sentence and a chart, where a research
 # note has nine paragraphs. Scored against the same vocabulary it would almost
@@ -1149,6 +687,9 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
         handle = post.get("handle", "").lstrip("@")
         if not pid or not handle:
             continue
+        if handle.lower() not in X_FOLLOWED:
+            drop("not a followed account")
+            continue
         try:
             published = date.fromisoformat(str(post.get("ts", ""))[:10])
         except ValueError:
@@ -1240,73 +781,19 @@ def parse_x_posts(fetch: Fetcher, days: int, verbose: bool = True) -> list[Artic
 # ---------------------------------------------------------------- selection
 
 def gather(fetch: Fetcher, days: int, per_theme: int, verbose: bool = True) -> tuple[list[Article], list[dict]]:
-    """Everything recent from both desks that lands on at least one theme."""
-    cutoff = date.today() - timedelta(days=days)
-    articles: list[Article] = []
-
-    jpm = [(u, d) for u, d in sitemap_entries(fetch, JPM_SITEMAP)
-           if d >= cutoff and any(s in u for s in JPM_SHELVES)]
-    if verbose:
-        print(f"J.P. Morgan: {len(jpm)} candidates since {cutoff}", file=sys.stderr)
-    for url, mod in jpm:
-        art = parse_jpm(url, mod, fetch)
-        # Discovery goes by the sitemap's lastmod, which also moves when an old
-        # page is merely retouched. The article's own date is the one that
-        # decides whether it belongs in a brief about this week.
-        if art and art.published >= cutoff:
-            articles.append(art)
-            if verbose:
-                print(f"  + {art.published} [{art.score:2d}] {len(art.charts)} charts  {art.title[:64]}",
-                      file=sys.stderr)
-
-    listing = bofa_listing(fetch)
-    bofa = [(u, d) for u, d in sitemap_entries(fetch, BOFA_SITEMAP)
-            if d >= cutoff and urlparse(u).path.count("/") >= 2 and u.endswith(".html")]
-    if verbose:
-        print(f"BofA Institute: {len(bofa)} candidates since {cutoff}", file=sys.stderr)
-    for url, mod in bofa:
-        art = parse_bofa(url, mod, listing, fetch)
-        if art and art.published >= cutoff:
-            articles.append(art)
-            if verbose:
-                print(f"  + {art.published} [{art.score:2d}] {len(art.charts)} charts  {art.title[:64]}",
-                      file=sys.stderr)
-
+    """Every fresh post from the followed accounts that lands on a theme."""
     posts = parse_x_posts(fetch, days, verbose=verbose)
 
-    # Each theme gets its freshest few. Taking the top N overall would let a
-    # busy week of macro copy crowd out the only oil note in the window, so
-    # selection runs per theme — and within a theme, a note actually filed
-    # under it outranks a wide-ranging outlook that merely touches it, however
-    # recent that outlook is. Otherwise the dollar section fills with pieces
-    # about everything and the one real currency note never appears.
+    # Each theme gets its best few, spread across accounts so one prolific
+    # account cannot take a whole subject. A post filed under the theme
+    # outranks one that merely touches it, and a post with a chart outranks
+    # one without — the charts are what the brief is for.
     chosen: dict[str, Article] = {}
-    for theme in THEME_ORDER:
-        ranked = sorted((a for a in articles if theme in a.themes),
-                        key=lambda a: (a.themes[0] == theme, a.published, a.score, len(a.charts)),
-                        reverse=True)
-        picks = ranked[:per_theme]
-        # The two desks answer the same question differently — J.P. Morgan
-        # from the forecast side, the Institute from its own card and payroll
-        # data — so a theme that has both should show both, even when one
-        # desk happens to have published more recently.
-        for desk in ("J.P. Morgan", "BofA Institute"):
-            if not any(a.source == desk for a in picks):
-                other = next((a for a in ranked if a.source == desk), None)
-                if other:
-                    picks.append(other)
-        for art in picks:
-            chosen.setdefault(art.url, art)
-
-    # Posts are selected on their own rather than thrown into the ranking
-    # above. A post always outranks a note on recency — these accounts publish
-    # within the hour, the desks within the month — so a shared ranking would
-    # hand every subject to X and bury the research the brief is built on.
     for theme in THEME_ORDER:
         ranked = sorted((a for a in posts if theme in a.themes),
                         key=lambda a: (a.themes[0] == theme, len(a.charts), a.published, a.score),
                         reverse=True)
-        for art in spread_by_account(ranked, X_PER_THEME):
+        for art in spread_by_account(ranked, per_theme):
             chosen.setdefault(art.url, art)
 
     picked = sorted(chosen.values(), key=lambda a: (a.published, a.score), reverse=True)
@@ -1315,7 +802,9 @@ def gather(fetch: Fetcher, days: int, per_theme: int, verbose: bool = True) -> t
         print(f"{shed} figure(s) held back, already printed in an earlier edition",
               file=sys.stderr)
     trim_to_budget(picked)
-    return picked, daily_insights(fetch, days)
+    # No daily newsletter any more; the slot stays so older editions, which
+    # carried the Institute's Daily Insights, still load and render.
+    return picked, []
 
 
 def spread_by_account(ranked: list[Article], limit: int) -> list[Article]:
@@ -1690,13 +1179,42 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
             f'newsletter. Each links to the note it came from.</p>'
             f'<ol>{items}</ol></section>')
 
+    # Editions from before the switch to X-only carry desk notes, and keep
+    # describing themselves the way they did when they were built.
+    with_desks = any(not a.source.startswith("@") for a in articles)
+    if with_desks:
+        blurb = ("the day's read from J.P. Morgan Global Research and the Bank of "
+                 "America Institute.")
+        headline = "What the research desks are saying this week"
+        standfirst = (
+            "The public research from J.P. Morgan Global Research and the Bank of\n"
+            "    America Institute, and the charts the research desks post on X, filtered to the US stock\n"
+            "    market, US macroeconomics, the dollar, oil, metals and global markets — with every figure\n"
+            "    lifted from the source.")
+        provenance = (
+            'Assembled automatically from the public pages of\n'
+            '      <a href="https://www.jpmorgan.com/global">jpmorgan.com</a> and\n'
+            '      <a href="https://institute.bankofamerica.com/">institute.bankofamerica.com</a>,\n'
+            '      and from the public posts of the research accounts followed on\n'
+            '      <a href="https://x.com/">X</a>.')
+    else:
+        handles = ", ".join(f"@{h}" for h in X_ACCOUNTS)
+        links = ", ".join(f'<a href="https://x.com/{h}">@{h}</a>' for h in X_ACCOUNTS)
+        blurb = f"the week's charts from {handles} on X."
+        headline = "What the chart accounts are posting this week"
+        standfirst = (
+            f"The week's charts from the research accounts followed on X — {esc(handles)} — "
+            "filtered to the US stock market, US macroeconomics, the dollar, oil, metals and "
+            "global markets, with every figure lifted from the post.")
+        provenance = f"Assembled automatically from the public posts of {links} on X."
+
     head = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Market Insight · {esc(long_day)}</title>
-<meta name="description" content="US markets, macro, dollar, oil, metals and global markets — the day's read from J.P. Morgan Global Research and the Bank of America Institute.">
+<meta name="description" content="US markets, macro, dollar, oil, metals and global markets — {esc(blurb)}">
 <style>{CSS}</style>
 </head>
 <body>""" if standalone else f"""<title>Market Insight · {esc(long_day)}</title>
@@ -1706,17 +1224,14 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
 <div class="wrap">
 <header class="masthead">
   <p class="kicker">Market Insight · Weekly Brief</p>
-  <h1>What the research desks are saying this week</h1>
-  <p class="standfirst">The public research from J.P. Morgan Global Research and the Bank of
-    America Institute, and the charts the research desks post on X, filtered to the US stock
-    market, US macroeconomics, the dollar, oil, metals and global markets — with every figure
-    lifted from the source.</p>
+  <h1>{esc(headline)}</h1>
+  <p class="standfirst">{standfirst}</p>
   <div class="meta-row">
     <span><strong>{esc(long_day)}</strong></span>
     <span>{len(articles)} notes</span>
     {since}
     <span>{charts} charts from source</span>
-    <span>{len(daily)} daily items</span>
+    {f'<span>{len(daily)} daily items</span>' if daily else ''}
     <span>Built {esc(edition.built or datetime.now().strftime("%H:%M"))}</span>
   </div>
 </header>
@@ -1732,11 +1247,7 @@ def render_report(edition: Edition, dates: list[str], standalone: bool = True) -
     {daily_html}
     {"".join(sections) or '<p class="empty">Nothing cleared the topic filter in this window.</p>'}
     <footer>
-      <p>Assembled automatically from the public pages of
-      <a href="https://www.jpmorgan.com/global">jpmorgan.com</a> and
-      <a href="https://institute.bankofamerica.com/">institute.bankofamerica.com</a>,
-      and from the public posts of the research accounts followed on
-      <a href="https://x.com/">X</a>.
+      <p>{provenance}
       Headlines, summaries and charts belong to their publishers and are reproduced here for
       reference; follow any headline to read the note in full. Nothing here is investment advice.</p>
     </footer>
@@ -2068,9 +1579,9 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[1],
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--days", type=int, default=45,
-                    help="how far back a note may have been published (default 45)")
+                    help="how far back a post may have been published (default 45)")
     ap.add_argument("--per-theme", type=int, default=4,
-                    help="most recent notes to keep per theme (default 4)")
+                    help="posts to keep per theme (default 4)")
     ap.add_argument("--no-cache", action="store_true", help="ignore cached pages")
     ap.add_argument("--render-only", action="store_true",
                     help="rebuild pages from reports/*/report.json, download nothing")
@@ -2107,9 +1618,6 @@ def main() -> int:
         write_archive(dates)
         print(f"{rebuilt} of {len(dates)} editions rebuilt, plus the archive index")
         return 0
-
-    if pymupdf is None:
-        print("note: pymupdf is not installed — BofA charts will be skipped", file=sys.stderr)
 
     fetch = Fetcher(use_cache=not args.no_cache)
     articles, daily = gather(fetch, args.days, args.per_theme, verbose=not args.quiet)
